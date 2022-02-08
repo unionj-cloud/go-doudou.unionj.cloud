@@ -2,27 +2,76 @@ module.exports = {
   // 主题和它的配置
   theme: "@vuepress/theme-default",
   themeConfig: {
-    repo: 'https://github.com/unionj-cloud/go-doudou',
+    repo: "https://github.com/unionj-cloud/go-doudou",
     logo: "/logo.png",
-    navbar: [
-      // NavbarItem
-      {
-        text: 'REST',
-        link: '/rest/',
-      },
-      {
-        text: 'RPC',
-        link: '/rpc/',
-      },
-    ],
     locales: {
-      '/': {
+      "/": {
+        home: "/",
         selectLanguageText: "Languages",
-        selectLanguageName: 'English',
+        selectLanguageName: "English",
+        navbar: [
+          // NavbarItem
+          {
+            text: "HOME",
+            link: "/",
+          },
+          {
+            text: "REST",
+            link: "/rest/install.md",
+          },
+          {
+            text: "RPC",
+            link: "/rpc/install.md",
+          },
+        ],
+        sidebar: {
+          "/rest/": [
+            {
+              text: "Install",
+              link: "install.md",
+            },
+          ],
+          "/rpc/": [
+            {
+              text: "Install",
+              link: "install.md",
+            },
+          ],
+        },
       },
-      '/zh/': {
+      "/zh/": {
+        home: "/zh/",
         selectLanguageText: "选择语言",
-        selectLanguageName: '简体中文',
+        selectLanguageName: "简体中文",
+        navbar: [
+          // NavbarItem
+          {
+            text: "首页",
+            link: "/zh/",
+          },
+          {
+            text: "REST",
+            link: "/zh/rest/install.md",
+          },
+          {
+            text: "RPC",
+            link: "/zh/rpc/install.md",
+          },
+        ],
+        sidebar: {
+          "/zh/rest/": [
+            {
+              text: "安装",
+              link: "install.md",
+            },
+          ],
+          "/zh/rpc/": [
+            {
+              text: "安装",
+              link: "install.md",
+            },
+          ],
+        },
       },
     },
   },
