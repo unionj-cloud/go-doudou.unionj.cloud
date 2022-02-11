@@ -1,39 +1,42 @@
 # Introduction
+Go-doudou（doudou pronounce /dəudəu/）is a gossip protocol based decentralized microservice
+framework. It supports monolith service application as well. Currently, it supports RESTful service only.
 
-VuePress is a markdown-centered static site generator. You can write your content (documentations, blogs, etc.) in [Markdown](https://en.wikipedia.org/wiki/Markdown), then VuePress will help you to generate a static site to host them.
+### Why?
+#### Background
+- I'm lazy, and I believe there are many developers like me. 
+- I'm not only an individual developer, but also a team leader with duty to make the whole team more productive
+- I am from a small company, we can't afford to recruit many senior developers, so my team members have different dev levels
+- I am from a small company, we don't have operation engineers  
 
-The purpose of creating VuePress was to support the documentation of Vue.js and its sub-projects, but now it has been helping a large amount of users to build their documentation, blogs, and other static sites.
+#### Reason
+- I need a tool to generate as much code as possible for us: if we don't know anything about tcp/ip/http/RESTFul/grpc/protobuf such low level things, and service register/service discover/failure detection/load balancing such microservice things, ONLY we know is CRUD, we still can develop robust programs/services out before the deadline. But I can't find such tool or framework.
+- I am a developer not an operation engineer, I don't like setting up many infrastructures myself. I mean I don't want to set up etcd or zookeeper cluster and maintain them myself. I find memberlist, a gossip library developed by hashicorp who also developed consul, so I decide to make a microservice framework using it to let every service discover each other by themselves.
+- I am a frontend developer in my early career, I know what a frontend developer want. So I choose OpenAPI 3.0 as bridge between frontend and backend. And I want to provide my frontend team members not only online documentation, but also mock server which can generating fake responses.  
 
-## How It Works
+#### Result
+Go-doudou comes out, it's mainly inspired by 
+- https://github.com/kujtimiihoxha/kit: a code generator cli for go-kit 
+- https://github.com/hashicorp/memberlist: golang package for gossip based membership and failure detection
+- https://spec.openapis.org/oas/v3.0.3: OpenAPI 3.0  
 
-A VuePress site is in fact a single-page application (SPA) powered by [Vue](https://v3.vuejs.org/) and [Vue Router](https://next.router.vuejs.org).
+### Design Philosophy
+- Design First: We encourage designing your apis at the first place.
+- Contract: We use OpenAPI 3.0 spec as a contract between server and client to reduce the communication cost between
+  different dev teams and speed up development.
+- Decentralization: We use gossip protocol based service register and discovery mechanism to build a robust, scalable and
+  decentralized service cluster.
 
-Routes are generated according to the relative path of your markdown files. Each Markdown file is compiled into HTML with [markdown-it](https://github.com/markdown-it/markdown-it) and then processed as the template of a Vue component. This allows you to directly use Vue inside your Markdown files and is great when you need to embed dynamic content.
-
-During development, we start a normal dev-server, and serve the VuePress site as a normal SPA. If you’ve used Vue before, you will notice the familiar development experience when you are writing and developing with VuePress.
-
-During build, we create a server-rendered version of the VuePress site and render the corresponding HTML by virtually visiting each route. This approach is inspired by [Nuxt](https://nuxtjs.org/)'s `nuxt generate` command and other projects like [Gatsby](https://www.gatsbyjs.org/).
-
-## Why Not ...?
-
-### Nuxt
-
-Nuxt is an outstanding Vue SSR framework, and it is capable of doing what VuePress does. But Nuxt is designed for building applications, while VuePress is more lightweight and focused on content-centric static sites.
-
-### VitePress
-
-VitePress is the little brother of VuePress. It's also created and maintained by our Vue.js team. It's even more lightweight and faster than VuePress. However, as a tradeoff, it's more opinionated and less configurable. For example, it does not support plugins. But VitePress is powerful enough to make your content online if you don't need advanced customizations.
-
-It might not be an appropriate comparison, but you can take VuePress and VitePress as Laravel and Lumen.
-
-### Docsify / Docute
-
-Both are great projects and also Vue-powered. Except they are both fully runtime-driven and therefore not SEO-friendly. If you don’t care for SEO and don’t want to mess with installing dependencies, these are still great choices.
-
-### Hexo
-
-Hexo has been serving the Vue 2.x docs well. The biggest problem is that its theming system is static and string-based - we want to take advantage of Vue for both the layout and the interactivity. Also, Hexo’s Markdown rendering isn’t the most flexible to configure.
-
-### GitBook
-
-We’ve been using GitBook for most of our sub project docs. The primary problem with GitBook is that its development reload performance is intolerable with a large amount of files. The default theme also has a pretty limiting navigation structure, and the theming system is, again, not Vue based. The team behind GitBook is also more focused on turning it into a commercial product rather than an open-source tool.
+### Features
+- Low-code: design service interface to generate main function, routes, http handlers, mock service implementation, http
+  client, OpenAPI 3.0 json spec and more.
+- Support DNS address for service register and discovery
+- Support both monolith and microservice architecture
+- Built-in service governance support including client-side load balancer, rate limiter, circuit breaker, bulkhead, timeout, retry and more.
+- Built-in graceful shutdown
+- Built-in live reloading by watching go files(not support windows)
+- Built-in service documentation UI
+- Built-in service registry UI
+- Built-in common used middlewares including tracing, logging, recover, request id, prometheus and more.
+- Built-in docker and k8s deployment support: dockerfile, deployment kind yaml file and statefulset kind yaml file
+- Easy to learn, simple to use

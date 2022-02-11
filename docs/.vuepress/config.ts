@@ -8,6 +8,16 @@ const isProd = process.env.NODE_ENV === 'production'
 export default defineUserConfig<DefaultThemeOptions>({
   base: '/',
 
+  head: [[
+    'link',
+    {
+      rel: 'icon',
+      type: 'image/x-icon',
+      sizes: '32x32',
+      href: `/favicon.ico`,
+    },
+  ]],
+
   locales: {
     "/": {
       lang: "en-US",
@@ -172,8 +182,8 @@ export default defineUserConfig<DefaultThemeOptions>({
       '@vuepress/plugin-shiki',
       isProd
         ? {
-            theme: 'dark-plus',
-          }
+          theme: 'dark-plus',
+        }
         : false,
     ],
   ],
