@@ -1,4 +1,4 @@
-# Migrating from v1
+# Migrating from v0.x
 
 ::: warning
 Plugins and themes of VuePress v1 are not compatible with VuePress v2. You need to update them to corresponding v2 version.
