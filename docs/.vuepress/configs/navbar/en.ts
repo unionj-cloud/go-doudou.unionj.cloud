@@ -26,7 +26,11 @@ export const en: NavbarConfig = [
     text: `v${version}`,
     children: [
       {
-        text: 'Changelog',
+        text: 'v0.x',
+        link: 'https://github.com/unionj-cloud/go-doudou/blob/v0.9.8/README.md',
+      },
+      {
+        text: 'Release Notes',
         link: 'https://github.com/unionj-cloud/go-doudou/releases',
       },
     ],

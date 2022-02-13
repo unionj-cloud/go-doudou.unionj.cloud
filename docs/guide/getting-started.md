@@ -102,42 +102,32 @@ Use "go-doudou [command] --help" for more information about a command.
 
 ## Hello World
 
-### Initialize project
-
+### Initialize Project
+Run `svc init` command, you can use `-m` flag to specify module name.
 ```shell
-➜  ~ go-doudou svc init helloworld
-1.16
-helloworld
+go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 ```
-
-You can ignore the warning now.
-
-```shell
-➜  helloworld git:(master) ✗ ls -la -h
-total 40
-drwxr-xr-x   10 wubin1989  staff   320B  8 29 23:27 .
-drwxr-xr-x+ 157 wubin1989  staff   4.9K  8 29 23:27 ..
--rw-r--r--    1 wubin1989  staff   2.0K  8 29 23:22 .env
-drwxr-xr-x    5 wubin1989  staff   160B  8 29 23:26 .git
--rw-r--r--    1 wubin1989  staff   268B  8 29 23:22 .gitignore
-drwxr-xr-x    6 wubin1989  staff   192B  8 29 23:27 .idea
--rw-r--r--    1 wubin1989  staff   707B  8 29 23:22 Dockerfile
--rw-r--r--    1 wubin1989  staff   442B  8 29 23:22 go.mod
--rw-r--r--    1 wubin1989  staff   253B  8 29 23:22 svc.go
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:22 vo
+It creates helloworld folder and some initial files.
 ```
-
+├── helloworld
+│   ├── Dockerfile
+│   ├── go.mod
+│   ├── svc.go
+│   └── vo
+│       └── vo.go
+```
 - Dockerfile：build docker image
 
-- svc.go: design your rest apis by defining methods of Helloworld interface
+- svc.go: design your RESTful apis by defining methods in `Helloworld` interface
 
-- vo folder：define structs as data structure in http request body and response body, and also as OpenAPI 3.0 schemas
+- vo folder：define structs as view objects and OpenAPI 3.0 schemas used in http request body and response body
 
-- .env: config file, go-doudou use it to load enviroment variables with GDD_ prefix
+- .env: config file used to load `GDD_` prefixed environment variables
 
-### Define methods
+### Define API
 
-Please read [Must Know](#must-know)
+`svc.go` file is the idl file to describe your apis. Let's comment out the example api `PageUsers` and define our own like `Greeting`.  
+Please refer to [Interface Definition Language](./idl.md) to learn more.
 
 ```go
 package service
@@ -149,166 +139,274 @@ import (
 
 type Helloworld interface {
 	// You can define your service methods as your need. Below is an example.
-	PageUsers(ctx context.Context, query vo.PageQuery) (code int, data vo.PageRet, err error)
+	// PageUsers(ctx context.Context, query vo.PageQuery) (code int, data vo.PageRet, err error)
+  Greeting(ctx context.Context, greeting string) (data string, err error)
 }
 ```
 
-### Generate code
-
+### Generate Code
 ```shell
-go-doudou svc http --handler -c go -o --doc
-go mod tidy
+go-doudou svc http --handler -c go --doc
 ```
-
+then we should run `go mod tidy` to download dependencies.
+If you use go 1.17, you will see below instruction:
+```
+To upgrade to the versions selected by go 1.16:
+	go mod tidy -go=1.16 && go mod tidy -go=1.17
+If reproducibility with go 1.16 is not needed:
+	go mod tidy -compat=1.17
+For other options, see:
+	https://golang.org/doc/modules/pruning
+```
+Then you should run `go mod tidy -go=1.16 && go mod tidy -go=1.17` or `go mod tidy -compat=1.17`.  
 Let's see what are generated.
 
 ```shell
-➜  helloworld git:(master) ✗ ls -la -h
-total 328
-drwxr-xr-x   20 wubin1989  staff   640B  8 31 12:34 .
-drwxr-xr-x+ 157 wubin1989  staff   4.9K  8 31 12:36 ..
--rw-r--r--    1 wubin1989  staff   2.0K  8 29 23:45 .env
-drwxr-xr-x    5 wubin1989  staff   160B  8 31 12:36 .git
--rw-r--r--    1 wubin1989  staff   268B  8 29 23:22 .gitignore
-drwxr-xr-x    7 wubin1989  staff   224B  8 31 12:33 .idea
--rw-r--r--    1 wubin1989  staff   707B  8 29 23:22 Dockerfile
--rwxr-xr-x    1 wubin1989  staff    13K  8 31 12:35 app.log
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:44 client
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:44 cmd
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:44 config
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:44 db
--rw-r--r--    1 wubin1989  staff   536B  8 31 12:35 go.mod
--rw-r--r--    1 wubin1989  staff   115K  8 31 12:35 go.sum
--rwxr-xr-x    1 wubin1989  staff   1.9K  8 31 12:34 helloworld_openapi3.go
--rwxr-xr-x    1 wubin1989  staff   1.8K  8 31 12:34 helloworld_openapi3.json
--rw-r--r--    1 wubin1989  staff   253B  8 29 23:22 svc.go
--rw-r--r--    1 wubin1989  staff   413B  8 29 23:44 svcimpl.go
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:44 transport
-drwxr-xr-x    3 wubin1989  staff    96B  8 29 23:22 vo
+.
+├── Dockerfile
+├── client
+│   ├── client.go
+│   └── clientproxy.go
+├── cmd
+│   └── main.go
+├── config
+│   └── config.go
+├── db
+│   └── db.go
+├── go.mod
+├── go.sum
+├── helloworld_openapi3.go
+├── helloworld_openapi3.json
+├── svc.go
+├── svcimpl.go
+├── transport
+│   └── httpsrv
+│       ├── handler.go
+│       ├── handlerimpl.go
+│       └── middleware.go
+└── vo
+    └── vo.go
 ```
 
-- helloworld_openapi3.json：OpenAPI 3.0 spec json documentation
+- helloworld_openapi3.json: OpenAPI 3.0 spec json documentation
 - helloworld_openapi3.go: assign OpenAPI 3.0 spec json string to a variable for serving online
-- client：golang http client based on [resty](https://github.com/go-resty/resty)
-- cmd：main.go file here
-- config：config loading related
-- db：function for connecting to database
-- svcimpl.go：write your business logic here
-- transport：http routes and handlers
-- .env：put configs here
+- client folder: golang http client sdk based on [resty](https://github.com/go-resty/resty)
+- cmd folder: entry of the whole program
+- config folder: used for loading your custom business related configs
+- db folder: helper function for connecting to database
+- svcimpl.go: code your business logic here
+- transport folder: http routes and handlers
 
 ### Run
-
-Set GDD_MEM_SEED empty in .env file because there is no seed address before run our service now.
-
+Run `go-doudou svc run`
 ```shell
-➜  helloworld git:(master) ✗ go run cmd/main.go
-INFO[2021-08-31 21:35:47] Node 192.168.2.20 joined, supplying helloworld service 
-WARN[2021-08-31 21:35:47] No seed found                                
-INFO[2021-08-31 21:35:47] Memberlist created. Local node is Node 192.168.2.20, providing helloworld service at http://192.168.2.20:6060, memberlist port 50324 
+➜  helloworld git:(master) ✗ go-doudou svc run       
  _____                     _                    _
 |  __ \                   | |                  | |
 | |  \/  ___   ______   __| |  ___   _   _   __| |  ___   _   _
 | | __  / _ \ |______| / _` | / _ \ | | | | / _` | / _ \ | | | |
 | |_\ \| (_) |        | (_| || (_) || |_| || (_| || (_) || |_| |
  \____/ \___/          \__,_| \___/  \__,_| \__,_| \___/  \__,_|
-INFO[2021-08-31 21:35:47] ================ Registered Routes ================ 
-INFO[2021-08-31 21:35:47] +-------------+--------+-------------------------+ 
-INFO[2021-08-31 21:35:47] |    NAME     | METHOD |         PATTERN         | 
-INFO[2021-08-31 21:35:47] +-------------+--------+-------------------------+ 
-INFO[2021-08-31 21:35:47] | PageUsers   | POST   | /page/users             | 
-INFO[2021-08-31 21:35:47] | GetDoc      | GET    | /go-doudou/doc          | 
-INFO[2021-08-31 21:35:47] | GetOpenAPI  | GET    | /go-doudou/openapi.json | 
-INFO[2021-08-31 21:35:47] | Prometheus  | GET    | /go-doudou/prometheus   | 
-INFO[2021-08-31 21:35:47] | GetRegistry | GET    | /go-doudou/registry     | 
-INFO[2021-08-31 21:35:47] +-------------+--------+-------------------------+ 
-INFO[2021-08-31 21:35:47] =================================================== 
-INFO[2021-08-31 21:35:47] Started in 431.269µs                         
-INFO[2021-08-31 21:35:47] Http server is listening on :6060
+INFO[2022-02-13 22:14:15] ================ Registered Routes ================ 
+INFO[2022-02-13 22:14:15] +-------------+--------+-------------------------+ 
+INFO[2022-02-13 22:14:15] |    NAME     | METHOD |         PATTERN         | 
+INFO[2022-02-13 22:14:15] +-------------+--------+-------------------------+ 
+INFO[2022-02-13 22:14:15] | Greeting    | POST   | /greeting               | 
+INFO[2022-02-13 22:14:15] | GetDoc      | GET    | /go-doudou/doc          | 
+INFO[2022-02-13 22:14:15] | GetOpenAPI  | GET    | /go-doudou/openapi.json | 
+INFO[2022-02-13 22:14:15] | Prometheus  | GET    | /go-doudou/prometheus   | 
+INFO[2022-02-13 22:14:15] | GetRegistry | GET    | /go-doudou/registry     | 
+INFO[2022-02-13 22:14:15] | GetConfig   | GET    | /go-doudou/config       | 
+INFO[2022-02-13 22:14:15] +-------------+--------+-------------------------+ 
+INFO[2022-02-13 22:14:15] =================================================== 
+INFO[2022-02-13 22:14:15] Started in 468.771µs                         
+INFO[2022-02-13 22:14:15] Http server is listening on :6060 
 ```
+
+### Postman
+Import helloworld_openapi3.json to postman to test `/greeting` api. You can see fake response returned.
+![greeting](/images/greeting.png)
+
+### Implementation
+Now we are going to start implementing our business logic in `svcimpl.go` file.
+Let's what code already there.
+```go
+package service
+
+import (
+	"context"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/unionj-cloud/helloworld/config"
+)
+
+type HelloworldImpl struct {
+	conf *config.Config
+}
+
+func (receiver *HelloworldImpl) Greeting(ctx context.Context, greeting string) (data string, err error) {
+	var _result struct {
+		Data string
+	}
+	_ = gofakeit.Struct(&_result)
+	return _result.Data, nil
+}
+
+func NewHelloworld(conf *config.Config) Helloworld {
+	return &HelloworldImpl{
+		conf,
+	}
+}
+```
+We use [gofakeit](github.com/brianvoe/gofakeit) to generate fake response as default implementation. Now we should get rid of it and start to code.
+```go
+package service
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/unionj-cloud/helloworld/config"
+)
+
+type HelloworldImpl struct {
+	conf *config.Config
+}
+
+func (receiver *HelloworldImpl) Greeting(ctx context.Context, greeting string) (data string, err error) {
+	return fmt.Sprintf("Hello %s", greeting), nil
+}
+
+func NewHelloworld(conf *config.Config) Helloworld {
+	return &HelloworldImpl{
+		conf,
+	}
+}
+```
+We removed Line 15~19 and replaced with `return fmt.Sprintf("Hello %s", greeting), nil`. Then let's test it again.
+![greeting1](/images/greeting1.png)
+You see, it's really very simple to write a RESTful service with go-doudou!
 
 ### Deployment
-
-#### Build docker image and push to your repository
-
+There are a lot of approaches to deploy go http server. We'd like to use kubernetes to deploy our projects.
+Please refer to [Deployment](./deployment.md) to learn more.
+#### Build Docker Image
+Run `go-doudou svc push -r wubin1989`, don't forget change `wubin1989` to your remote docker image reposiotry.
 ```shell
 ➜  helloworld git:(master) ✗ go-doudou svc push -r wubin1989
-[+] Building 0.8s (13/13) FINISHED                                                                                                       
- => [internal] load build definition from Dockerfile                                                                                0.0s
- => => transferring dockerfile: 37B                                                                                                 0.0s
- => [internal] load .dockerignore                                                                                                   0.0s
- => => transferring context: 2B                                                                                                     0.0s
- => [internal] load metadata for docker.io/library/golang:1.13.4-alpine                                                             0.0s
- => [1/8] FROM docker.io/library/golang:1.13.4-alpine                                                                               0.0s
- => [internal] load build context                                                                                                   0.7s
- => => transferring context: 22.43MB                                                                                                0.6s
- => CACHED [2/8] WORKDIR /repo                                                                                                      0.0s
- => CACHED [3/8] ADD go.mod .                                                                                                       0.0s
- => CACHED [4/8] ADD go.sum .                                                                                                       0.0s
- => CACHED [5/8] ADD . ./                                                                                                           0.0s
- => CACHED [6/8] RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories                                   0.0s
- => CACHED [7/8] RUN apk add --no-cache bash tzdata                                                                                 0.0s
- => CACHED [8/8] RUN export GDD_VER=$(go list -mod=vendor -m -f '{{ .Version }}' github.com/unionj-cloud/go-doudou) && CGO_ENABLED  0.0s
- => exporting to image                                                                                                              0.0s
- => => exporting layers                                                                                                             0.0s
- => => writing image sha256:00365c58d0410d978aea462ec93323e20d879b15421e8eba29d8a17918660af8                                        0.0s
- => => naming to docker.io/library/helloworld                                                                                       0.0s
-
-Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+[+] Building 42.9s (13/13) FINISHED                                                                                                                                
+ => [internal] load build definition from Dockerfile                                                                                                          0.0s
+ => => transferring dockerfile: 778B                                                                                                                          0.0s
+ => [internal] load .dockerignore                                                                                                                             0.0s
+ => => transferring context: 2B                                                                                                                               0.0s
+ => [internal] load metadata for docker.io/library/golang:1.16.6-alpine                                                                                      13.0s
+ => [1/8] FROM docker.io/library/golang:1.16.6-alpine@sha256:bc2db47c5f4a682f1315e0d484811d65bf094d3bcd824459b170714c91656190                                 0.0s
+ => [internal] load build context                                                                                                                             1.1s
+ => => transferring context: 50.40MB                                                                                                                          1.1s
+ => CACHED [2/8] WORKDIR /repo                                                                                                                                0.0s
+ => [3/8] ADD go.mod .                                                                                                                                        0.2s
+ => [4/8] ADD go.sum .                                                                                                                                        0.0s
+ => [5/8] ADD . ./                                                                                                                                            0.9s
+ => [6/8] RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories                                                                    0.6s
+ => [7/8] RUN apk add --no-cache bash tzdata                                                                                                                 13.8s
+ => [8/8] RUN export GDD_VER=$(go list -mod=vendor -m -f '{{ .Version }}' github.com/unionj-cloud/go-doudou) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go bu  12.4s
+ => exporting to image                                                                                                                                        0.7s 
+ => => exporting layers                                                                                                                                       0.6s 
+ => => writing image sha256:d5c50cfd8ef750eba6a883f14edf2397df1901eadf924b39b9cedda1ad9495cd                                                                  0.0s 
+ => => naming to docker.io/library/helloworld                                                                                                                 0.0s 
+                                                                                                                                                                   
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them                                                               
 The push refers to repository [docker.io/wubin1989/helloworld]
-d0a9599b03e1: Pushed 
-c3055fdf1a79: Layer already exists 
-1c265a7f4c3e: Layer already exists 
-f567cf5a5cf1: Layer already exists 
-0b4acd902364: Layer already exists 
-bbf9670b59e9: Layer already exists 
-fdd6fb6fca5b: Layer already exists 
-a17f85ec7605: Layer already exists 
-2895b872dff5: Layer already exists 
-eed8c158e67f: Layer already exists 
-2033402d2275: Layer already exists 
-77cae8ab23bf: Layer already exists 
-v20210831125525: digest: sha256:5f75f7b43708d0619555f9bccbf0347e8db65319b83c65251015982ca6d23370 size: 2829
-time="2021-08-31 12:55:53" level=info msg="image wubin1989/helloworld:v20210831125525 has been pushed successfully\n"
-time="2021-08-31 12:55:53" level=info msg="k8s yaml has been created/updated successfully. execute command 'go-doudou svc deploy' to deploy service helloworld to k8s cluster\n"
+29d9439ae861: Pushed 
+6e1f1247e3b5: Pushed 
+b2b2a71f9880: Pushed 
+681e9176b1dd: Pushed 
+8e5de385ef21: Pushed 
+0b35a2c6b44d: Pushed 
+152447a5498b: Pushed 
+bb2e1759ebf5: Mounted from library/golang 
+fff907320fc1: Mounted from library/golang 
+6fbdad009c9d: Mounted from library/golang 
+1328cc49ba2b: Mounted from library/golang 
+72e830a4dff5: Mounted from library/golang 
+v20220213230159: digest: sha256:5bc59a7069be59ef670889d52b7bdd6acd62a171bc2415d54375592da793f8cc size: 2831
+INFO[2022-02-13 23:03:11] image wubin1989/helloworld:v20220213230159 has been pushed successfully 
+INFO[2022-02-13 23:03:11] k8s yaml has been created/updated successfully. execute command 'go-doudou svc deploy' to deploy service helloworld to k8s cluster
 ```
 
-then you should see there are two yaml files generated
+Then you should see there are two yaml files generated from Line 13 and Line 16
 
 ```
-➜  helloworld git:(master) ✗ ll
-total 328
--rw-r--r--  1 wubin1989  staff   707B  8 29 23:22 Dockerfile
--rwxr-xr-x  1 wubin1989  staff    15K  8 31 12:55 app.log
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:44 client
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:44 cmd
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:44 config
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:44 db
--rw-r--r--  1 wubin1989  staff   536B  8 31 12:35 go.mod
--rw-r--r--  1 wubin1989  staff   115K  8 31 12:35 go.sum
--rw-r--r--  1 wubin1989  staff   817B  8 31 12:55 helloworld_deployment.yaml
--rwxr-xr-x  1 wubin1989  staff   1.9K  8 31 12:34 helloworld_openapi3.go
--rwxr-xr-x  1 wubin1989  staff   1.8K  8 31 12:34 helloworld_openapi3.json
--rw-r--r--  1 wubin1989  staff   867B  8 31 12:55 helloworld_statefulset.yaml
--rw-r--r--  1 wubin1989  staff   253B  8 29 23:22 svc.go
--rw-r--r--  1 wubin1989  staff   413B  8 29 23:44 svcimpl.go
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:44 transport
-drwxr-xr-x  6 wubin1989  staff   192B  8 31 12:55 vendor
-drwxr-xr-x  3 wubin1989  staff    96B  8 29 23:22 vo
+├── Dockerfile
+├── client
+│   ├── client.go
+│   └── clientproxy.go
+├── cmd
+│   └── main.go
+├── config
+│   └── config.go
+├── db
+│   └── db.go
+├── go.mod
+├── go.sum
+├── helloworld_deployment.yaml
+├── helloworld_openapi3.go
+├── helloworld_openapi3.json
+├── helloworld_statefulset.yaml
+├── main
+├── svc.go
+├── svcimpl.go
+├── transport
+│   └── httpsrv
+│       ├── handler.go
+│       ├── handlerimpl.go
+│       └── middleware.go
+└── vo
+    └── vo.go
 ```
 
-- helloworld_deployment.yaml: k8s deploy file for stateless service, recommend for monolith architecture services
-- helloworld_statefulset.yaml: k8s deploy file for stateful service, recommend for microservices architecture services
+- helloworld_deployment.yaml: k8s deploy file for stateless service used for monolith architecture services
+- helloworld_statefulset.yaml: k8s deploy file for stateful service used for microservice architecture services  
 
 #### Deploy
-
+::: tip
+If you haven't installed Docker Desktop, please download and install it from [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop).  
+If you are not familiar with docker and kubernetes, please refer to [official documentation](https://docs.docker.com/get-started/overview/) to learn more.
+::: 
+By default, `go-doudou svc deploy` command uses `helloworld_statefulset.yaml` to deploy the service as statefulset application.  
 ```shell
-go-doudou svc deploy 
+go-doudou svc deploy
+```
+Then run `kubectl get pods` and you should see our service is running.
+```shell
+➜  helloworld git:(master) ✗ kubectl get pods    
+NAME                       READY   STATUS    RESTARTS   AGE
+helloworld-statefulset-0   1/1     Running   0          11m
+```
+At the moment, you can't connect to our service via `http://localhost:6060`. You should setup proxy by running below commands:
+```shell
+export POD_NAME=$(kubectl get pods --namespace default -l "app=helloworld" -o jsonpath="{.items[0].metadata.name}")
+```
+and 
+```shell
+kubectl port-forward --namespace default $POD_NAME 6060:6060 
+```
+If you see below output from command line, you can test by postman now.
+```shell
+➜  helloworld git:(master) ✗ export POD_NAME=$(kubectl get pods --namespace default -l "app=helloworld" -o jsonpath="{.items[0].metadata.name}")
+➜  helloworld git:(master) ✗ kubectl port-forward --namespace default $POD_NAME 6060:6060                                               
+Forwarding from 127.0.0.1:6060 -> 6060
+Forwarding from [::1]:6060 -> 6060
 ```
 
 #### Shutdown
-
+Run `go-doudou svc shutdown` to stop the service.
 ```shell
 go-doudou svc shutdown
 ```  
+Then run `kubectl get pods` again, you should see below output.
+```shell
+➜  helloworld git:(master) ✗ kubectl get pods                                                                                             
+No resources found in default namespace.
+```
 
