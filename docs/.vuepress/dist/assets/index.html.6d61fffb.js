@@ -1,0 +1,1 @@
+const t={key:"v-2d0ad528",path:"/zh/",title:"Go-doudou\u6587\u6863",lang:"zh-CN",frontmatter:{},excerpt:"",headers:[],git:{updatedTime:1644318272e3,contributors:[{name:"wubin1989",email:"328454505@qq.com",commits:1}]},filePathRelative:"zh/README.md"};export{t as data};
