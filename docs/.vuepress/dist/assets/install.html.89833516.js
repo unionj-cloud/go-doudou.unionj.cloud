@@ -1,1 +1,0 @@
-const t={key:"v-eac08dfe",path:"/rpc/install.html",title:"Install",lang:"en-US",frontmatter:{},excerpt:"",headers:[],git:{updatedTime:1644319927e3,contributors:[{name:"wubin1989",email:"328454505@qq.com",commits:1}]},filePathRelative:"rpc/install.md"};export{t as data};

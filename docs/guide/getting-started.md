@@ -127,7 +127,7 @@ It creates helloworld folder and some initial files.
 ### Define API
 
 `svc.go` file is the idl file to describe your apis. Let's comment out the example api `PageUsers` and define our own like `Greeting`.  
-Please refer to [Interface Definition Language](./idl.md) to learn more.
+Please refer to [Define API](./idl.md) to learn more.
 
 ```go
 package service

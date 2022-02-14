@@ -114,11 +114,11 @@ export default defineUserConfig<DefaultThemeOptions>({
     // [
     //   '@vuepress/plugin-docsearch',
     //   {
-    //     apiKey: '3a539aab83105f01761a137c61004d85',
-    //     indexName: 'vuepress',
-    //     searchParameters: {
-    //       facetFilters: ['tags:v2'],
-    //     },
+    //     apiKey: '447f4d5dbe5f85906f8e61fe254f4794',
+    //     indexName: 'go-doudou',
+    //     // searchParameters: {
+    //     //   facetFilters: ['tags:v2'],
+    //     // },
     //     locales: {
     //       '/zh/': {
     //         placeholder: '搜索文档',
