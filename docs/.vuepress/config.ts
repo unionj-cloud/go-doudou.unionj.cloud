@@ -22,7 +22,7 @@ export default defineUserConfig<DefaultThemeOptions>({
     "/": {
       lang: "en-US",
       title: "go-doudou",
-      description: "Gossip Protocol Distributed Golang Microservice Framework",
+      description: "Gossip Protocol Decentralized Golang Microservice Framework",
     },
     "/zh/": {
       lang: "zh-CN",
