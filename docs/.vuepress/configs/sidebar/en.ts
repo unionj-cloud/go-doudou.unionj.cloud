@@ -9,6 +9,7 @@ export const en: SidebarConfig = {
         '/guide/getting-started.md',
         '/guide/idl.md',
         '/guide/cli.md',
+        '/guide/generation.md',
         '/guide/configuration.md',
         '/guide/deployment.md',
         '/guide/migration.md',

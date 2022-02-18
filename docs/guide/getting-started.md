@@ -23,6 +23,7 @@ go get -v -d github.com/unionj-cloud/go-doudou@v1.0.0-beta
 
 ::: tip
 If you meet 410 Gone error, try to run below command, then run install command again:
+
 ```shell
 export GOSUMDB=off
 ``` 
@@ -146,7 +147,7 @@ type Helloworld interface {
 
 ### Generate Code
 ```shell
-go-doudou svc http --handler -c go --doc
+go-doudou svc http --handler -c --doc
 ```
 then we should run `go mod tidy` to download dependencies.
 If you use go 1.17, you will see below instruction:
@@ -365,8 +366,8 @@ Then you should see there are two yaml files generated from Line 13 and Line 16
     └── vo.go
 ```
 
-- helloworld_deployment.yaml: k8s deploy file for stateless service used for monolith architecture services
-- helloworld_statefulset.yaml: k8s deploy file for stateful service used for microservice architecture services  
+- helloworld_deployment.yaml: k8s deploy file for stateless service, recommended to be used for monolith architecture services
+- helloworld_statefulset.yaml: k8s deploy file for stateful service, recommended to be used for microservice architecture services  
 
 #### Deploy
 ::: tip

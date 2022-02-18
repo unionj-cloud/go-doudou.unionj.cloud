@@ -19,6 +19,10 @@ If you don't specify, default is `POST`.
 5. NOT support alias types as field of struct.
 6. NOT support func, channel and anonymous struct type as input and output parameter.
 7. Only request parameter `required` validation feature built-in, no struct field validation. Go-doudou treats pointer type as optional, non-pointer type as required. 
+8. As for OpenAPI 3.0 documentation
+	- Not support documenting request headers and response headers, global parameters and authentication. You can write down these information 
+as golang comments immediately above service interface or corresponding methods in `svc.go` file, and these comments will be set to each `description` attribute in generated OpenAPI 3.0 json file and also be displayed in online api documentation.
+	- Not support [Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). You may not need them, but I should mention here.
 
 ## Example
 ```
