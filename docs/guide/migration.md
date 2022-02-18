@@ -16,6 +16,6 @@ You may also need to correct import paths to clear compile errors. Here is a tab
 | v0.x                    | v1.x                                        |                                               
 | ----------------------- |---------------------------------------------|
 | `github.com/unionj-cloud/go-doudou/svc/`            | `github.com/unionj-cloud/go-doudou/framework/` |
-| `github.com/unionj-cloud/go-doudou/svc/config`            | moved to `github.com/unionj-cloud/go-doudou/framework/internal/config` package, so it can't be imported to your code anymore  |
+| `github.com/unionj-cloud/go-doudou/svc/config`            | moved to `github.com/unionj-cloud/go-doudou/framework/internal/config` package, so it can't be imported to your project anymore  |
 
 
