@@ -42,3 +42,4 @@ go-doudou svc deploy -k helloworld_deployment.yaml
 Change `helloworld_deployment.yaml` to your custom file.
 
 ## Microservice Architecture
+![microservice](/images/microservice.png)
