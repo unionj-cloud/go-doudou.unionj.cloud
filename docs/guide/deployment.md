@@ -42,4 +42,65 @@ go-doudou svc deploy -k helloworld_deployment.yaml
 Change `helloworld_deployment.yaml` to your custom file.
 
 ## Microservice Architecture
+
+### Overview
 ![microservice](/images/microservice.png)
+
+### Network Security
+Though you can set `GDD_MEM_CIDRS_ALLOWED` environment variable to ensure network security, we recommend you not to open memberlist port which is `7946` by default to allow public accessing.
+
+### Cluster Seeds
+To set up a go-doudou microservice cluster, there must be one or more existing services as seeds for others to join. You can choose any number of any go-doudou service to be a seed. Then you should set `GDD_MEM_SEED` environment variable to a string value joined by hosts of each seed and comma for other services.
+
+### Prometheus Service Discovery
+Currently there is no official service discovery support for go-doudou applications from Prometheus, so we implemented our own based on [Implementing Custom Service Discovery](https://prometheus.io/blog/2018/07/05/implementing-custom-sd/) found from official blog. Source code is [here](https://github.com/unionj-cloud/go-doudou-guide/tree/master/seed), and we have also built a docker image, you can run below command to download:
+```shell
+docker pull wubin1989/go-doudou-prometheus-sd:v1.0.0-beta1
+```
+As an example, you can copy and paste below code to `docker-compose.yml` to use it:
+```shell
+version: '3.9'
+
+services:
+  wordcloud-prometheus:
+    container_name: wordcloud-prometheus
+    hostname: wordcloud-prometheus
+    image: wubin1989/go-doudou-prometheus-sd:v1.0.0-beta1
+    environment:
+      - GDD_SERVICE_NAME=wordcloud-prometheus
+      - PROM_REFRESH_INTERVAL=15s
+      - GDD_MEM_CIDRS_ALLOWED=172.28.0.0/16
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    ports:
+      - "9090:9090"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9090" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - tutorial
+
+networks:
+  tutorial:
+    name: tutorial
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+```
+
+### Kubernetes
+First step is building docker image and pushing it to your remote private image repository.
+```shell
+go-doudou svc push -r your-remote-private-image-repository
+```
+Then you will get a `_statefulset.yaml` suffixed file for further use.
+
+For ECS and docker deployment, it is very similar to Monolithic Architecture, so I'd like to explain Kubernetes deployment here. As we have built-in service register and discovery mechanism and client side load balancing, we don't need these features provided by Kubernetes, we just use Kubernetes for scaling. As we know, container ip may be changed when restarted by manual or auto-scaling mechanism, but we need fixed ip or dns address for each service instance to re-join cluster as fast as possible, we should deploy our go-doudou service instances as statefulset kind and expose them as headless services so that we can get a fixed dns address for each such as `seed-2.seed-svc-headless.default.svc.cluster.local` in `container-hostname.service-metadata-name.my-namespace.svc.cluster-domain.example` pattern. For further reading, please refer to [DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/). Come back to go-doudou, you should set `GDD_MEM_SEED` to dns address such as `auth-statefulset-0.auth-svc-headless.default.svc.cluster.local:7946,shoppingcart-statefulset-0.shoppingcart-svc-headless.default.svc.cluster.local:7946`(`:7946` can be omit as `7946` is default), and you should also set `GDD_MEM_HOST` to partial dns address such as `.corpus-service.default.svc.cluster.local` to leave `container-hostname` blank to let go-doudou prefix it automatically. After set these environment variables correctly, you can run below command to deploy:
+```shell
+go-doudou svc deploy
+```
+This command will run `kubectl apply -f your-service-interface-name_statefulset.yaml` under the hood.

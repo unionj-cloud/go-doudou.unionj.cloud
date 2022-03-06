@@ -48,3 +48,4 @@ If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can se
 | GDD_MEM_WEIGHT | node weight for smooth weighted round-robin balancing   | 0         |          |
 | GDD_MEM_WEIGHT_INTERVAL | node weight will be calculated every GDD_MEM_WEIGHT_INTERVAL    | 0s        |          |
 | GDD_MEM_LOG_DISABLE | whether disable memberlist logging           | false        |          |
+| GDD_MEM_CIDRS_ALLOWED | If not set, allow any connection (default), otherwise specify all networks allowed connecting (you must specify IPv6/IPv4 separately). Example: GDD_MEM_CIDRS_ALLOWED=172.28.0.0/16 |  |          |
