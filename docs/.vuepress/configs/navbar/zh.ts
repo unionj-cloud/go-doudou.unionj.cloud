@@ -6,14 +6,6 @@ export const zh: NavbarConfig = [
     text: '指南',
     link: '/zh/guide/',
   },
-  // {
-  //   text: "REST",
-  //   link: "/rest/install.md",
-  // },
-  // {
-  //   text: "RPC",
-  //   link: "/rpc/install.md",
-  // },
   {
     text: '资源',
     link: '/zh/resources/',

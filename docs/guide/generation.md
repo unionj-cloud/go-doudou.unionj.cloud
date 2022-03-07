@@ -16,6 +16,8 @@ Besides understanding `go-doudou` CLI flags and subcommands usage, you should al
 
 - `client/client.go`: Every time you run `go-doudou svc http` with `-c` flag, existing code in it will be overwritten. So don't edit it.
 
+- `client/iclient.go`: Every time you run `go-doudou svc http` with `-c` flag, existing code in it will be overwritten. So don't edit it.
+
 - `${service}_openapi3.go`: Every time you run `go-doudou svc http` with `--doc` flag, existing code in it will be overwritten. So don't edit it.
 
 - `${service}_openapi3.json`: Every time you run `go-doudou svc http` with `--doc` flag, existing code in it will be overwritten. So don't edit it.

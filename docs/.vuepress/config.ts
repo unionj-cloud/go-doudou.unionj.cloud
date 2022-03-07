@@ -24,11 +24,11 @@ export default defineUserConfig<DefaultThemeOptions>({
       title: "go-doudou",
       description: "Gossip Protocol Decentralized Golang Microservice Framework",
     },
-    "/zh/": {
-      lang: "zh-CN",
-      title: "go-doudou",
-      description: "基于Gossip协议的去中心化go语言微服务框架",
-    },
+    // "/zh/": {
+    //   lang: "zh-CN",
+    //   title: "go-doudou",
+    //   description: "基于Gossip协议的去中心化go语言微服务框架",
+    // },
   },
 
   themeConfig: {
