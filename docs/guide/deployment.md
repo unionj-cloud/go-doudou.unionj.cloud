@@ -53,7 +53,7 @@ Though you can set `GDD_MEM_CIDRS_ALLOWED` environment variable to ensure networ
 To set up a go-doudou microservice cluster, there must be one or more existing services as seeds for others to join. You can choose any number of any go-doudou service to be a seed. Then you should set `GDD_MEM_SEED` environment variable to a string value joined by hosts of each seed and comma for other services.
 
 ### Prometheus Service Discovery
-Currently there is no official service discovery support for go-doudou applications from Prometheus, so we implemented our own based on [Implementing Custom Service Discovery](https://prometheus.io/blog/2018/07/05/implementing-custom-sd/) found from official blog. Source code is [here](https://github.com/unionj-cloud/go-doudou-guide/tree/master/seed), and we have also built a docker image, you can run below command to download:
+Currently there is no official service discovery support for go-doudou applications from Prometheus, so we implemented our own based on [Implementing Custom Service Discovery](https://prometheus.io/blog/2018/07/05/implementing-custom-sd/) found from official blog. Source code is [here](https://github.com/unionj-cloud/go-doudou-prometheus-sd), and we have also built a docker image, you can run below command to download:
 ```shell
 docker pull wubin1989/go-doudou-prometheus-sd:v1.0.0
 ```
