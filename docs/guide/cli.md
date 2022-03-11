@@ -6,7 +6,7 @@ Go-doudou has built-in code generation CLI. `go-doudou` is the root command and 
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou -v     
-go-doudou version v1.0.1
+go-doudou version v1.0.2
 ```
 
 - `-h` can print help message. As all subcommands have this flag, I will omit it in the following documentation. 
@@ -48,7 +48,7 @@ and asks you if you want to upgrade.
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou version
 Installed version is v0.9.8
-Latest release version is v1.0.1 
+Latest release version is v1.0.2
 Use the arrow keys to navigate: ↓ ↑ → ← 
 ? Do you want to upgrade?: 
   ▸ Yes
@@ -243,7 +243,7 @@ Flags:
 - Install go-doudou
 
   ```shell
-  go get -v github.com/unionj-cloud/go-doudou@v1.0.1
+  go get -v github.com/unionj-cloud/go-doudou@v1.0.2
   ```
 
 - Clone demo repository

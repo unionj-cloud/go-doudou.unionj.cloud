@@ -55,7 +55,7 @@ To set up a go-doudou microservice cluster, there must be one or more existing s
 ### Prometheus Service Discovery
 Currently there is no official service discovery support for go-doudou applications from Prometheus, so we implemented our own based on [Implementing Custom Service Discovery](https://prometheus.io/blog/2018/07/05/implementing-custom-sd/) found from official blog. Source code is [here](https://github.com/unionj-cloud/go-doudou-prometheus-sd), and we have also built a docker image, you can run below command to download:
 ```shell
-docker pull wubin1989/go-doudou-prometheus-sd:v1.0.1
+docker pull wubin1989/go-doudou-prometheus-sd:v1.0.2
 ```
 As an example, you can copy and paste below code to `docker-compose.yml` to use it:
 ```shell
@@ -65,7 +65,7 @@ services:
   wordcloud-prometheus:
     container_name: wordcloud-prometheus
     hostname: wordcloud-prometheus
-    image: wubin1989/go-doudou-prometheus-sd:v1.0.0
+    image: wubin1989/go-doudou-prometheus-sd:v1.0.2
     environment:
       - GDD_SERVICE_NAME=wordcloud-prometheus
       - PROM_REFRESH_INTERVAL=15s
