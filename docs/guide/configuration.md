@@ -26,8 +26,9 @@ If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can se
 | GDD_MANAGE_USER         | http basic username for built-in api endpoints     | admin        |          |
 | GDD_MANAGE_PASS         | http basic password for built-in api endpoints     | admin        |          |
 | GDD_TRACING_METRICS_ROOT         | metrics root for jaeger tracing    | Go-doudou        |          |
-
-## Cluster Configuration
+| GDD_WEIGHT         | service instance weight    | 1        |          |
+| GDD_SERVICE_DISCOVERY_MODE              | service discovery mode, available options: `memberlist` and `nacos`             | memberlist      |       |
+## Memberlist Configuration
 
 | Environment Variable    | Description                                                      | Default   | Required |
 | ----------------------- |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------| -------- |
@@ -45,7 +46,19 @@ If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can se
 | GDD_MEM_GOSSIP_INTERVAL | gossip messages in queue every GDD_MEM_GOSSIP_INTERVAL duration         | 500ms     |          |
 | GDD_MEM_TCP_TIMEOUT | TCP request will timeout in GDD_MEM_TCP_TIMEOUT duration   | 30s       |          |
 | GDD_MEM_INDIRECT_CHECKS | the number of nodes that will be asked to perform an indirect probe of a node in the case a direct probe fails   | 3       |          |
-| GDD_MEM_WEIGHT | node weight for smooth weighted round-robin balancing   | 0         |          |
+| GDD_MEM_WEIGHT | `Deprecated` node weight for smooth weighted round-robin balancing   | 0         |          |
 | GDD_MEM_WEIGHT_INTERVAL | node weight will be calculated every GDD_MEM_WEIGHT_INTERVAL    | 0s        |          |
 | GDD_MEM_LOG_DISABLE | whether disable memberlist logging           | false        |          |
 | GDD_MEM_CIDRS_ALLOWED | If not set, allow any connection (default), otherwise specify all networks allowed connecting (you must specify IPv6/IPv4 separately). Example: GDD_MEM_CIDRS_ALLOWED=172.28.0.0/16 |  |          |
+
+## Nacos Configuration
+| Environment Variable    | Description                                                      | Default   | Required |
+| ----------------------- |------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------| -------- |
+| GDD_NACOS_NAMESPACE_ID         |     the namespaceId of Nacos, empty means public                                                              |  |         |
+| GDD_NACOS_TIMEOUT_MS           | timeout for requesting Nacos server in milliseconds      | 10000      |          |
+| GDD_NACOS_NOT_LOAD_CACHE_AT_START            | not to load persistent nacos service info in CacheDir at start time | false      |          |
+| GDD_NACOS_LOG_DIR       | the directory for log                       | /tmp/nacos/log      |          |
+| GDD_NACOS_CACHE_DIR       | the directory for persist nacos service info                    | /tmp/nacos/cache       |          |
+| GDD_NACOS_LOG_LEVEL       | the level of log, it's must be `debug`,`info`,`warn`,`error`                                         | info       |          |
+| GDD_NACOS_SERVER_ADDR        | nacos server connection url, multiple urls are joined by comma     |        |          |
+| GDD_NACOS_REGISTER_HOST        | service instance host to be registered to nacos server |        |          |
