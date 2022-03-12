@@ -64,7 +64,7 @@ GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 
 ## Client Load Balancing
 
-### Simple Round-robin Load Balancing
+### Simple Round-robin Load Balancing (memberlist only)
 
 ```go
 func main() {
@@ -94,7 +94,7 @@ func main() {
 }
 ```
 
-### Smooth Weighted Round-robin Balancing
+### Smooth Weighted Round-robin Balancing (memberlist only)
 
 If environment variable `GDD_MEM_WEIGHT` is not set, local node weight will be calculated by health score and cpu idle
 percent every `GDD_MEM_WEIGHT_INTERVAL` and gossip to remote nodes. By default, `GDD_MEM_WEIGHT_INTERVAL` is `0s`, this feature is disabled.
@@ -125,7 +125,55 @@ func main() {
 
 	...
 }
-```  
+```
+
+### Simple Round-robin Load Balancing (nacos only)
+
+```go
+func main() {
+	conf := config.LoadFromEnv()
+
+	err := registry.NewNode()
+	if err != nil {
+		logrus.Panic(fmt.Sprintf("%+v", err))
+	}
+	defer registry.Shutdown()
+
+	svc := service.NewStatsvc(conf,
+		nacosservicej.NewEcho(
+			ddhttp.WithRootPath("/nacos-service-j"),
+			ddhttp.WithProvider(ddhttp.NewNacosRRServiceProvider("nacos-service-j"))),
+	)
+	handler := httpsrv.NewStatsvcHandler(svc)
+	srv := ddhttp.NewDefaultHttpSrv()
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
+}
+```
+
+### Weighted Round-robin Load Balancing (nacos only)
+
+```go
+func main() {
+	conf := config.LoadFromEnv()
+
+	err := registry.NewNode()
+	if err != nil {
+		logrus.Panic(fmt.Sprintf("%+v", err))
+	}
+	defer registry.Shutdown()
+
+	svc := service.NewStatsvc(conf,
+		nacosservicej.NewEcho(
+			ddhttp.WithRootPath("/nacos-service-j"),
+			ddhttp.WithProvider(ddhttp.NewNacosWRRServiceProvider("nacos-service-j"))),
+	)
+	handler := httpsrv.NewStatsvcHandler(svc)
+	srv := ddhttp.NewDefaultHttpSrv()
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
+}
+```
 
 ## Rate Limit
 ### Usage
