@@ -1,8 +1,19 @@
 # RESTful
 
 ## Service Register and Discovery
+Go-doudou has two options: `memberlist` and `nacos`. 
+- `memberlist`: based on [SWIM gossip protocol](https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf), decentralized, peer to peer architecture, no leader node, forking from [hashicorp/memberlist](https://github.com/hashicorp/memberlist) and make some changes
+- [`nacos`](https://github.com/alibaba/nacos): centralized, leader-follower architecture, developed by alibaba
 
-Go-doudou has built-in service register, discovery and failure detection based on [memberlist](https://github.com/hashicorp/memberlist).
+::: tip
+`memberlist` and `nacos` can be used together.
+
+```shell
+GDD_SERVICE_DISCOVERY_MODE=memberlist,nacos
+```
+:::
+
+### Memberlist
 
 First, add below code to `main` function.
 
@@ -14,8 +25,42 @@ if err != nil {
 defer registry.Shutdown()
 ```  
 
-Second, configure `GDD_MEM_SEED` environment variable in `.env` file or `docker-compose.yml` file. If you will deploy it to kubernetes, you should also configure `GDD_MEM_HOST` environment variable. For further reading, please refer to [Microservice Architecture](./deployment.md#kubernetes-1) section.
+Second, configure some environment variables.
+- `GDD_MEM_SEED`: seed address for joining cluster, multiple addresses are separated by comma
+- `GDD_MEM_PORT`: by default, memberlist advertising port is `7946`
+- `GDD_MEM_HOST`: by default, private IP is used 
+- `GDD_SERVICE_DISCOVERY_MODE`: You don't have to configure it, as `memberlist` is the default value
 
+```shell
+GDD_MEM_SEED=localhost:7946  # Required
+GDD_MEM_PORT=56199 # Optional
+GDD_MEM_HOST=localhost # Optional
+GDD_SERVICE_DISCOVERY_MODE=memberlist # Optional
+```
+
+### Nacos
+From v1.0.2, go-doudou adds `nacos` as another option for service discovery.
+
+First, add below code to `main` function.
+
+```go
+err := registry.NewNode()
+if err != nil {
+    logrus.Panic(fmt.Sprintf("%+v", err))
+}
+defer registry.Shutdown()
+```  
+
+Yes, no difference from using `memberlist`.
+
+Second, configure some environment variables.
+- `GDD_NACOS_SERVER_ADDR`: your Nacos server address
+- `GDD_SERVICE_DISCOVERY_MODE`: service discovery mode
+
+```shell
+GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos # Required
+GDD_SERVICE_DISCOVERY_MODE=nacos # Required
+```
 
 ## Client Load Balancing
 
