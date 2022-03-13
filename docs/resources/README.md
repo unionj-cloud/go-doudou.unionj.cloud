@@ -17,10 +17,11 @@ sidebar: auto
 ### Bilibili
 
 - [go-doudou微服务框架入门01-hello world](https://www.bilibili.com/video/BV1AS4y1F7mE?spm_id_from=333.999.0.0)
+- [go-doudou微服务框架入门02-集成nacos服务注册与发现](https://www.bilibili.com/video/BV1pU4y1o7xL?t=0.0)
 
 ## Example
 - [go-doudou-tutorials](https://github.com/unionj-cloud/go-doudou-tutorials)
     - helloworld: toy application
     - usersvc: toy application
     - wordcloud: real-world application with frontend, microservice architecture
-- [go-doudou-guide](https://github.com/unionj-cloud/go-doudou-guide): for dev and test purposes
+    - nacos: demo project for demonstrating how to use Nacos for service discovery in go-doudou RESTful service application
