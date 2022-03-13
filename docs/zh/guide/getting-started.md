@@ -102,32 +102,45 @@ Use "go-doudou [command] --help" for more information about a command.
 
 ## Hello World
 
-### Initialize Project
-Run `svc init` command, you can use `-m` flag to specify module name.
+### 初始化项目
+执行 `go-doudou svc init` 命令，你可以设置`-m`参数，指定模块名称。
 ```shell
 go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 ```
-It creates helloworld folder and some initial files.
+这行命令会生成`helloworld`文件夹和一些初始化文件。
 ```
-├── helloworld
-│   ├── Dockerfile
-│   ├── go.mod
-│   ├── svc.go
-│   └── vo
-│       └── vo.go
+➜  helloworld git:(master) ✗ tree -a 
+.
+├── .env
+├── .git
+│   ├── HEAD
+│   ├── objects
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       └── tags
+├── .gitignore
+├── Dockerfile
+├── go.mod
+├── svc.go
+└── vo
+    └── vo.go
+
+8 directories, 7 files
 ```
-- Dockerfile：build docker image
+- `Dockerfile`：用于打包docker镜像
 
-- svc.go: design your RESTful apis by defining methods in `Helloworld` interface
+- `svc.go`: 在这个文件里的`Helloworld`接口里面定义方法，go-doudou通过你定义的方法生成对应的RESTful接口代码
 
-- vo folder：define structs as view objects and OpenAPI 3.0 schemas used in http request body and response body
+- `vo`包：里面定义`view object`结构体，用于请求体和响应体，可以手动创建多个go文件，`vo`包里定义的结构体都会作为`OpenAPI 3.0`的`schema`生成到json格式的接口文档中
 
-- .env: config file used to load `GDD_` prefixed environment variables
+- `.env`: 配置文件，里面的配置会被加载到环境变量里
 
-### Define API
+### 定义接口
 
-`svc.go` file is the idl file to describe your apis. Let's comment out the example api `PageUsers` and define our own like `Greeting`.  
-Please refer to [Define API](./idl.md) to learn more.
+`svc.go`文件相当于是接口定义文件，我们在`Helloworld`接口里定义方法就是在定义接口。我们现在注释掉默认生成的例子`PageUsers`方法，定义我们自己的一个接口`Greeting`。请参阅[Define API](./idl.md)
+章节内容了解更多。
 
 ```go
 package service
@@ -144,12 +157,13 @@ type Helloworld interface {
 }
 ```
 
-### Generate Code
+### 生成代码
+先执行如下命令
 ```shell
 go-doudou svc http --handler -c --doc
 ```
-then we should run `go mod tidy` to download dependencies.
-If you use go 1.17, you will see below instruction:
+然后再执行`go mod tidy`来下载依赖。
+If you use go 1.17, you will see below instruction: 如果你使用的Go版本是1.17，你可能会看到如下提示信息：
 ```
 To upgrade to the versions selected by go 1.16:
 	go mod tidy -go=1.16 && go mod tidy -go=1.17
@@ -158,8 +172,8 @@ If reproducibility with go 1.16 is not needed:
 For other options, see:
 	https://golang.org/doc/modules/pruning
 ```
-Then you should run `go mod tidy -go=1.16 && go mod tidy -go=1.17` or `go mod tidy -compat=1.17`.  
-Let's see what are generated.
+这时你需要执行命令`go mod tidy -go=1.16 && go mod tidy -go=1.17`或者`go mod tidy -compat=1.17`。
+让我们看看生成了什么。
 
 ```shell
 .
@@ -189,17 +203,17 @@ Let's see what are generated.
     └── vo.go
 ```
 
-- helloworld_openapi3.json: OpenAPI 3.0 spec json documentation
-- helloworld_openapi3.go: assign OpenAPI 3.0 spec json string to a variable for serving online
-- client folder: golang http client sdk based on [resty](https://github.com/go-resty/resty)
-- cmd folder: entry of the whole program
-- config folder: used for loading your custom business related configs
-- db folder: helper function for connecting to database
-- svcimpl.go: code your business logic here
-- transport folder: http routes and handlers
+- `helloworld_openapi3.json`: json格式的`OpenAPI 3.0`接口文档
+- `helloworld_openapi3.go`: 将`OpenAPI 3.0`接口文档的内容赋值给一个全局的变量用于在线浏览
+- `client`包: 基于[resty](https://github.com/go-resty/resty)封装的Go语言http请求客户端代码
+- `cmd`包: 整个程序的入口
+- `config`包: 用于加载与业务相关的配置
+- `db`包: 连接数据库的工具代码
+- `svcimpl.go`: 在这个文件中实现接口，编写真实的业务逻辑代码
+- `transport`包: http网络层代码，主要负责解析入参和编码出参
 
-### Run
-Run `go-doudou svc run`
+### 启动服务
+执行命令`go-doudou svc run`
 ```shell
 ➜  helloworld git:(master) ✗ go-doudou svc run       
  _____                     _                    _

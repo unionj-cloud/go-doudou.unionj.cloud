@@ -110,12 +110,25 @@ go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 ```
 It creates helloworld folder and some initial files.
 ```
-├── helloworld
-│   ├── Dockerfile
-│   ├── go.mod
-│   ├── svc.go
-│   └── vo
-│       └── vo.go
+➜  helloworld git:(master) ✗ tree -a 
+.
+├── .env
+├── .git
+│   ├── HEAD
+│   ├── objects
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       └── tags
+├── .gitignore
+├── Dockerfile
+├── go.mod
+├── svc.go
+└── vo
+    └── vo.go
+
+8 directories, 7 files
 ```
 - Dockerfile：build docker image
 
