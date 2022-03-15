@@ -208,7 +208,7 @@ go-doudou svc shutdown -k helloworld_deployment.yaml
 
 ## ddl
 
-DDL and dao layer generation subcommand based on [jmoiron/sqlx](https://github.com/jmoiron/sqlx).
+DDL and dao layer generation subcommand based on [jmoiron/sqlx](https://github.com/jmoiron/sqlx). Currently only support `mysql`。
 
 ### Features
 
@@ -249,7 +249,7 @@ Flags:
 - Clone demo repository
 
   ```
-  git clone git@github.com:unionj-cloud/ddldemo.git
+  git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
   ```
 
 - Update database table struct and generate dao layer code

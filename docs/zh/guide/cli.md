@@ -132,22 +132,22 @@ func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
 
 #### Subcommands
 
-There is only one subcommand `client` available. It is used for generating golang http client code from OpenAPI 3.0 spec json file. There are some flags for it. Let's see an example:
+只有一个子命令 `client`，用于从json格式的`OpenAPI 3.0`接口文档生成Go语言http请求客户端代码。有几个参数可配置。我用一个例子说明：
 
 ```shell
 go-doudou svc http client -o -e GRAPHHOPPER -f https://docs.graphhopper.com/openapi.json --pkg graphhopper
 ```
 
-- `-e` or `--env`: `string` type. It is used for setting server url environment variable name.
+- `-e` or `--env`: `string` 类型。用于设置写进http请求客户端代码里的服务端baseUrl的环境变量名。
 
-- `-f` or `--file`: `string` type. It is used for setting OpenAPI 3.0 spec json file path or download link.
+- `-f` or `--file`: `string` 类型。用于设置接口文档的本地路径或下载链接。
 
-- `-o` or `--omit`: `bool` type. It is used for configuring whether to append `,omitempty` to json tag.
+- `-o` or `--omit`: `bool` 类型。如果设置了这个参数，会在json标签里的字段名后面加`,omitempty`。
 
-- `-p` or `--pkg`: `string` type. It is used for setting client package name. Default is `client`.
+- `-p` or `--pkg`: `string` 类型。用于设置包名，默认值为`client`。
 
 ::: tip
-There must be `200` response in `responses` object for each api, otherwise client code will not be generated and you will see an error message from command line output for corresponding api like this:
+每个接口都需要有`200`状态码的响应体，否则不会生成该接口的代码，在命令行终端也会输出错误信息。
 
 ```shell
 ➜  go-doudou-tutorials git:(master) ✗ go-doudou svc http client -o -e PETSTORE -f https://petstore3.swagger.io/api/v3/openapi.json --pkg petstore
@@ -163,64 +163,64 @@ ERRO[2022-02-18 11:56:09] 200 response definition not found in api Delete /store
 
 ### run
 
-`go-doudou svc run` is used for starting our service in development.
+`go-doudou svc run` 用于启动服务。
 
-- `-w` or `--watch`: `bool` type. It is used for enabling watch mode. Not support on windows. I made this feature, but I am not recommending you to use it as I personally prefer to start or shutdown a program through IDE manually.
+- `-w` or `--watch`: `bool` 类型。用于开启`watch`模式，即热重启。不支持windows平台。虽然做了这个功能，但并不推荐使用。
 
 ### push
 
-`go-doudou svc push` is used for building docker image, pushing to your remote repository and generating k8s deployment files. It runs `go mod vendor`, `docker build`, `docker tag`, `docker push` commands sequentially. For example: 
+`go-doudou svc push` 用于生成docker镜像，推到远程镜像仓库，并生成k8s部署文件。实际按顺序依次执行了`go mod vendor`, `docker build`, `docker tag`, `docker push`这几个命令。
 
 ```shell
 go-doudou svc push --pre godoudou_ -r wubin1989
 ```
 
-- `--pre`: `string` type. Its value will be prefixed to image name for grouping your images.
+- `--pre`: `string` 类型。用于设置镜像文件的名称前缀。
 
-- `-r` or `--repo`: `string` type. Docker image will be pushed to this repository.
+- `-r` or `--repo`: `string` type. 用于设置远程镜像仓库地址。
 
-After executed this command, you will get two files: 
+命令执行完毕后，你会得到两个文件：
 
-- `${service}_deployment.yaml`: k8s deploy file for stateless service, recommended to be used for monolith architecture services
-- `${service}_statefulset.yaml`: k8s deploy file for stateful service, recommended to be used for microservice architecture services
+- `${service}_deployment.yaml`: 无状态的k8s应用部署文件，推荐用于单体应用架构。
+- `${service}_statefulset.yaml`: 有状态的k8s应用部署文件，推荐用于微服务架构。
 
 ### deploy
 
-`go-doudou svc deploy` is used for deploying your service to kubernetes. It runs `kubectl apply -f` command underlyingly. For example, 
+`go-doudou svc deploy` 用于将服务部署到k8s。实际执行的是`kubectl apply -f`命令。
 
 ```shell
 go-doudou svc deploy -k helloworld_deployment.yaml
 ```
 
-- `-k` or `--k8sfile`: `string` type. It is used for specifying k8s deployment file path. Default is `${service}_statefulset.yaml`.
+- `-k` or `--k8sfile`: `string` 类型。用于设置k8s部署文件的本地路径。默认值为`${service}_statefulset.yaml`。
 
 ### shutdown
 
-`go-doudou svc shutdown` is used for shutting down your service on kubernetes. It runs `kubectl delete -f` command underlyingly. For example, 
+`go-doudou svc shutdown` 用于从k8s下线服务，实际执行`kubectl delete -f`命令。
 
 ```shell
 go-doudou svc shutdown -k helloworld_deployment.yaml
 ```
 
-- `-k` or `--k8sfile`: `string` type. It is used for specifying k8s deployment file path. Default is `${service}_statefulset.yaml`.  
+- `-k` or `--k8sfile`: `string` 类型。用于设置k8s部署文件的本地路径。默认值为`${service}_statefulset.yaml`。
 
 ## ddl
 
-DDL and dao layer generation subcommand based on [jmoiron/sqlx](https://github.com/jmoiron/sqlx).
+基于[jmoiron/sqlx](https://github.com/jmoiron/sqlx)的表结构同步和Dao层代码生成子命令。目前仅支持`mysql`。
 
-### Features
+### 特性
 
-- Create/Update table from go struct
-- Create/Update go struct from table
-- Generate dao layer code with basic crud operations
-- Support transaction in dao layer
-- Support index update
-- Support foreign key
+- 从Go语言结构体类型创建或更新表结构，仅新增和更新字段，不删字段
+- 从表结构生成Go语言结构体
+- 生成支持单表CRUD操作的Dao层代码
+- Dao层代码支持数据库事务
+- 支持索引的创建和更新
+- 支持外键的创建和更新
 
-### Flags
+### 命令行参数
 
 ```shell
-➜  ~ go-doudou ddl -h
+➜  go-doudou git:(main) go-doudou ddl -h 
 migration tool between database table structure and golang struct
 
 Usage:
@@ -230,24 +230,24 @@ Flags:
   -d, --dao             If true, generate dao code.
       --df string       Name of dao folder. (default "dao")
       --domain string   Path of domain folder. (default "domain")
-      --env string      Path of database connection config .env file (default ".env")
+      --env string      Environment name such as dev, uat, test, prod, default is dev (default "dev")
   -h, --help            help for ddl
       --pre string      Table name prefix. e.g.: prefix biz_ for biz_product.
   -r, --reverse         If true, generate domain code from database. If false, update or create database tables from domain code.
 ```
 
-### Quickstart
+### 快速开始
 
-- Install go-doudou
+- 安装go-doudou
 
   ```shell
   go get -v github.com/unionj-cloud/go-doudou@v1.0.2
   ```
 
-- Clone demo repository
+- 克隆示例代码
 
   ```
-  git clone git@github.com:unionj-cloud/ddldemo.git
+  git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
   ```
 
 - Update database table struct and generate dao layer code
@@ -649,14 +649,14 @@ func ExampleCriteria() {
 
 ## name
 
-Subcommand for generating json tag of struct field. Default strategy is lower-camel. Support snake case as well. Unexported fields will be skipped, only modify json tag of each exported field.
+根据指定的命名规则生成结构体字段后面的`json`tag。默认生成策略是**首字母小写的驼峰命名策略**，同时支持蛇形命名。未导出的字段会跳过，只修改导出字段的json标签。支持`omitempty`。
 
-### Flags
+
+### 命令行参数
 
 ```shell
-➜  go-doudou git:(main) go-doudou name -h   
-WARN[0000] Error loading .env file: open /Users/wubin1989/workspace/cloud/.env: no such file or directory 
-bulk add or update struct fields json tag
+➜  go-doudou git:(main) go-doudou name -h
+bulk add or update json tag of struct fields
 
 Usage:
   go-doudou name [flags]
@@ -668,9 +668,9 @@ Flags:
   -s, --strategy string   name of strategy, currently only support "lowerCamel" and "snake" (default "lowerCamel")
 ```
 
-### Usage
+### 用法
 
-- Put `//go:generate go-doudou name --file $GOFILE` into go file
+- 在go文件里写上`//go:generate go-doudou name --file $GOFILE`，不限位置，最好是写在上方。目前的实现是对整个文件的所有struct都生效。
 
 ```go
 //go:generate go-doudou name --file $GOFILE
@@ -697,7 +697,7 @@ type TestName struct {
 }
 ```
 
-- Execute  `go generate ./...` at the same folder
+- 在项目根路径下执行命令`go generate ./...`
 
 ```go
 type Event struct {
@@ -721,6 +721,7 @@ type TestName struct {
 	CallbackN func(param string) bool `json:"callbackN"`
 }
 ```
+
 
 
 
