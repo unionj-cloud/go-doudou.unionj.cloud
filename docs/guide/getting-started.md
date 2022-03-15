@@ -349,7 +349,7 @@ INFO[2022-02-13 23:03:11] image wubin1989/helloworld:v20220213230159 has been pu
 INFO[2022-02-13 23:03:11] k8s yaml has been created/updated successfully. execute command 'go-doudou svc deploy' to deploy service helloworld to k8s cluster
 ```
 
-Then you should see there are two yaml files generated from Line 13 and Line 16
+Then you should see there are two yaml files generated: `helloworld_deployment.yaml` and `helloworld_statefulset.yaml`
 
 ```
 ├── Dockerfile

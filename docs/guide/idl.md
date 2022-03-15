@@ -14,7 +14,7 @@ If you don't specify, default is `POST`.
 2. First input parameter MUST be `context.Context`.
 3. Only support most of golang [built-in types](https://golang.org/pkg/builtin/), map with string key, custom structs in vo
    package, corresponding slice and pointer types for input and output parameters. When generate code and
-   OpenAPI 3.0 spec, it will scan structs in vo package only. The structs placed in other than vo package will not be awarded by go-doudou.
+   OpenAPI 3.0 spec, it will scan structs in vo package only. The structs placed in other than vo package will not be known by go-doudou.
 4. As a special case, it supports `v3.FileModel` for uploading files as input parameter and `*os.File` for downloading files as output parameter.
 5. NOT support alias types as field of struct.
 6. NOT support func, channel and anonymous struct type as input and output parameter.
@@ -25,7 +25,7 @@ as golang comments immediately above service interface or corresponding methods 
 	- Not support [Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). You may not need them, but I should mention here.
 
 ## Example
-```
+```go
 package service
 
 import (

@@ -139,8 +139,7 @@ go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 
 ### 定义接口
 
-`svc.go`文件相当于是接口定义文件，我们在`Helloworld`接口里定义方法就是在定义接口。我们现在注释掉默认生成的例子`PageUsers`方法，定义我们自己的一个接口`Greeting`。请参阅[Define API](./idl.md)
-章节内容了解更多。
+`svc.go`文件相当于是接口定义文件，我们在`Helloworld`接口里定义方法就是在定义接口。我们现在注释掉默认生成的例子`PageUsers`方法，定义我们自己的一个接口`Greeting`。请参阅[Define API](./idl.md) 章节内容了解更多。
 
 ```go
 package service
@@ -205,7 +204,7 @@ For other options, see:
 
 - `helloworld_openapi3.json`: json格式的`OpenAPI 3.0`接口文档
 - `helloworld_openapi3.go`: 将`OpenAPI 3.0`接口文档的内容赋值给一个全局的变量用于在线浏览
-- `client`包: 基于[resty](https://github.com/go-resty/resty)封装的Go语言http请求客户端代码
+- `client`包: 基于[resty](https://github.com/go-resty/resty) 封装的Go语言http请求客户端代码
 - `cmd`包: 整个程序的入口
 - `config`包: 用于加载与业务相关的配置
 - `db`包: 连接数据库的工具代码
@@ -239,12 +238,11 @@ INFO[2022-02-13 22:14:15] Http server is listening on :6060
 ```
 
 ### Postman
-Import helloworld_openapi3.json to postman to test `/greeting` api. You can see fake response returned.
+将`helloworld_openapi3.json`文件导入postman，测试`/greeting`接口。你可以看到返回了假数据。
 ![greeting](/images/greeting.png)
 
-### Implementation
-Now we are going to start implementing our business logic in `svcimpl.go` file.
-Let's what code already there.
+### 实现接口
+现在我们要在`svcimpl.go`文件里实现真实的业务逻辑了。让我们先来看一下现在的代码。
 ```go
 package service
 
@@ -273,7 +271,7 @@ func NewHelloworld(conf *config.Config) Helloworld {
 	}
 }
 ```
-We use [gofakeit](github.com/brianvoe/gofakeit) to generate fake response as default implementation. Now we should get rid of it and start to code.
+我们采用[gofakeit](github.com/brianvoe/gofakeit) 这个库帮我们生成假数据。我们首先需要删掉这些代码。
 ```go
 package service
 
@@ -298,15 +296,15 @@ func NewHelloworld(conf *config.Config) Helloworld {
 	}
 }
 ```
-We removed Line 15~19 and replaced with `return fmt.Sprintf("Hello %s", greeting), nil`. Then let's test it again.
+我们删掉了第15~19行的代码，替换成了`return fmt.Sprintf("Hello %s", greeting), nil`。我们再测一下效果。
 ![greeting1](/images/greeting1.png)
-You see, it's really very simple to write a RESTful service with go-doudou!
+用go-doudou写RESTful接口是不是非常简单！
 
-### Deployment
-There are a lot of approaches to deploy go http server. We'd like to use kubernetes to deploy our projects.
-Please refer to [Deployment](./deployment.md) to learn more.
-#### Build Docker Image
-Run `go-doudou svc push -r wubin1989`, don't forget change `wubin1989` to your remote docker image reposiotry.
+### K8S部署
+有很多种部署go语言的http服务的方案。我们这里将`helloworld`服务部署到k8s上。请参考[Deployment](./deployment.md) 章节来了解更多。
+#### 构建docker镜像
+执行命令`go-doudou svc push -r wubin1989`，别忘记将`wubin1989`改成你自己的远程镜像仓库。
+
 ```shell
 ➜  helloworld git:(master) ✗ go-doudou svc push -r wubin1989
 [+] Building 42.9s (13/13) FINISHED                                                                                                                                
@@ -349,7 +347,7 @@ INFO[2022-02-13 23:03:11] image wubin1989/helloworld:v20220213230159 has been pu
 INFO[2022-02-13 23:03:11] k8s yaml has been created/updated successfully. execute command 'go-doudou svc deploy' to deploy service helloworld to k8s cluster
 ```
 
-Then you should see there are two yaml files generated from Line 13 and Line 16
+然后你可以看到生成了两个yaml格式的文件：`helloworld_deployment.yaml`和`helloworld_statefulset.yaml`
 
 ```
 ├── Dockerfile
@@ -381,33 +379,32 @@ Then you should see there are two yaml files generated from Line 13 and Line 16
     └── vo.go
 ```
 
-- helloworld_deployment.yaml: k8s deploy file for stateless service, recommended to be used for monolith architecture services
-- helloworld_statefulset.yaml: k8s deploy file for stateful service, recommended to be used for microservice architecture services  
+- helloworld_deployment.yaml: 用于部署无状态的服务，如果是单体架构，推荐采用
+- helloworld_statefulset.yaml: 用于部署有状态的服务，如果是微服务架构，推荐采用
 
-#### Deploy
+#### 部署
 ::: tip
-If you haven't installed Docker Desktop, please download and install it from [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop).  
-If you are not familiar with docker and kubernetes, please refer to [official documentation](https://docs.docker.com/get-started/overview/) to learn more.
+如果你还没有安装Docker for Desktop，请从[https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) 下载安装。如果你对docker和k8s不了解，请参考[官方文档](https://docs.docker.com/get-started/overview/)。
 ::: 
-By default, `go-doudou svc deploy` command uses `helloworld_statefulset.yaml` to deploy the service as statefulset application.  
+当执行命令`go-doudou svc deploy`时，默认采用`helloworld_statefulset.yaml`文件来部署有状态的应用。
 ```shell
 go-doudou svc deploy
 ```
-Then run `kubectl get pods` and you should see our service is running.
+然后执行命令`kubectl get pods`，可以看到我们的服务已经在运行了。
 ```shell
 ➜  helloworld git:(master) ✗ kubectl get pods    
 NAME                       READY   STATUS    RESTARTS   AGE
 helloworld-statefulset-0   1/1     Running   0          11m
 ```
-At the moment, you can't connect to our service via `http://localhost:6060`. You should setup proxy by running below commands:
+此时，你还不能通过`http://localhost:6060`访问服务。需要先配置一个端口转发。
 ```shell
 export POD_NAME=$(kubectl get pods --namespace default -l "app=helloworld" -o jsonpath="{.items[0].metadata.name}")
 ```
-and 
+然后
 ```shell
 kubectl port-forward --namespace default $POD_NAME 6060:6060 
 ```
-If you see below output from command line, you can test by postman now.
+如果你看到命令行终端有如下内容输出，就可以用postman测试接口了。
 ```shell
 ➜  helloworld git:(master) ✗ export POD_NAME=$(kubectl get pods --namespace default -l "app=helloworld" -o jsonpath="{.items[0].metadata.name}")
 ➜  helloworld git:(master) ✗ kubectl port-forward --namespace default $POD_NAME 6060:6060                                               
@@ -415,12 +412,12 @@ Forwarding from 127.0.0.1:6060 -> 6060
 Forwarding from [::1]:6060 -> 6060
 ```
 
-#### Shutdown
-Run `go-doudou svc shutdown` to stop the service.
+#### 关闭服务
+执行命令`go-doudou svc shutdown`可以关闭服务
 ```shell
 go-doudou svc shutdown
 ```  
-Then run `kubectl get pods` again, you should see below output.
+再次执行命令`kubectl get pods`，可以看到服务已经下线。
 ```shell
 ➜  helloworld git:(master) ✗ kubectl get pods                                                                                             
 No resources found in default namespace.
