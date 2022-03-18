@@ -1,66 +1,74 @@
-# Configuration
+# 配置
 
-You can use environment variables to configure go-doudou framework. Go-doudou uses [godotenv](https://github.com/joho/godotenv) library to give you out-of-box support for loading environment variable values from dotenv files.
+Go-doudou基于 [godotenv](https://github.com/joho/godotenv) 这个库提供了对`.env`配置文件的开箱支持，可以从配置文件中加载配置到环境变量中。
 
-If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can set `GDD_ENV` to `test` or `prod` to load corresponding dotenv file.
+如果你有多个`.env`文件，例如`.env.test`, `.env.prod`等分别配置不同的环境，你可以通过设置`GDD_ENV`环境变量为`test`或者`prod`来加载对应的配置文件。
 
-## Service Configuration
+配置加载规则如下：
+  1. 同一个环境变量，不论是在命令行终端配置的，还是通过配置文件配置的，最先加载的值优先级最高，不会被后加载的值修改  
+  2. 配置文件的加载顺序是（以`prod`环境为例）：  
+    1. 加载`.env.prod.local`文件  
+    2. 当环境变量`GDD_ENV`的值**不**等于`test`时，加载`.env.local`文件  
+    3. 加载`.env.prod`文件  
+    4. 加载`.env`文件  
 
-| Environment Variable       | Description                                                                                                                                               | Default    | Required                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------- |
-| GDD_BANNER                 | whether output banner to stdout or not to console                                                                                                         | true       |                                             |
-| GDD_BANNER_TEXT            |                                                                                                                                                           | Go-doudou  |                                             |
-| GDD_LOG_LEVEL              | possible values are panic, fatal, error, warn, warning, info, debug, trace                                                                                | info       |                                             |
-| GDD_LOG_FORMAT             | set log format to text or json, possible values are text and json                                                                                         | text       |                                             |
-| GDD_LOG_REQ_ENABLE         | enable request and response logging                                                                                                                       | false      |                                             |
-| GDD_GRACE_TIMEOUT          | graceful shutdown timeout for http server                                                                                                                 | 15s        |                                             |
-| GDD_WRITE_TIMEOUT          | http server connection write timeout                                                                                                                      | 15s        |                                             |
-| GDD_READ_TIMEOUT           | http server connection read timeout                                                                                                                       | 15s        |                                             |
-| GDD_IDLE_TIMEOUT           | http server connection idle timeout                                                                                                                       | 60s        |                                             |
-| GDD_ROUTE_ROOT_PATH        | prefix string to each of http api routes                                                                                                                  |            |                                             |
-| GDD_SERVICE_NAME           | service name                                                                                                                                              |            | Yes if you develop microservice application |
-| GDD_HOST                   | host for the http server to listen on                                                                                                                     |            |                                             |
-| GDD_PORT                   | port for the http server to listen on                                                                                                                     | 6060       |                                             |
-| GDD_RETRY_COUNT            | client retry count                                                                                                                                        | 0          |                                             |
-| GDD_MANAGE_ENABLE          | enable built-in api endpoints such as `/go-doudou/doc`, `/go-doudou/openapi.json`, `/go-doudou/prometheus`, `/go-doudou/registry` and `/go-doudou/config` | true       |                                             |
-| GDD_MANAGE_USER            | http basic username for built-in api endpoints                                                                                                            | admin      |                                             |
-| GDD_MANAGE_PASS            | http basic password for built-in api endpoints                                                                                                            | admin      |                                             |
-| GDD_TRACING_METRICS_ROOT   | metrics root for jaeger tracing                                                                                                                           | Go-doudou  |                                             |
-| GDD_WEIGHT                 | service instance weight                                                                                                                                   | 1          |                                             |
-| GDD_SERVICE_DISCOVERY_MODE | service discovery mode, available options: `memberlist` and `nacos`                                                                                       | memberlist |                                             |
+## 服务配置
 
-## Memberlist Configuration
+| 环境变量名       | 描述                                                                                                       | 默认值    | 是否必须   |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | -------|
+| GDD_BANNER                 | 是否开启banner                                                                                   | true       |        |
+| GDD_BANNER_TEXT            | banner文字                                                                                       | Go-doudou  |        |
+| GDD_LOG_LEVEL              | 日志等级，可选项：`panic`, `fatal`, `error`, `warn`, `warning`, `info`, `debug`, `trace`           | info       |        |
+| GDD_LOG_FORMAT             | 日志格式，可选项：`text`, `json`                                                                   | text       |        |
+| GDD_LOG_REQ_ENABLE         | 是否开启http请求体和响应体日志                                                                       | false      |        |
+| GDD_GRACE_TIMEOUT          | 优雅下线的超时时间                                                                                  | 15s        |        |
+| GDD_WRITE_TIMEOUT          | http连接的写超时时间                                                                                | 15s        |        |
+| GDD_READ_TIMEOUT           | http连接的读超时时间                                                                                | 15s        |        |
+| GDD_IDLE_TIMEOUT           | http连接的空闲超时时间                                                                              | 60s        |        |
+| GDD_ROUTE_ROOT_PATH        | http请求路径前缀                                                                                   |            |        |
+| GDD_SERVICE_NAME           | 服务名                                                                                            |            | 必须    |
+| GDD_HOST                   | http服务器监听地址                                                                                  |            |        |
+| GDD_PORT                   | http服务器监听端口                                                                                  | 6060       |        |
+| GDD_RETRY_COUNT            | 客户端请求重试次数                                                                                   | 0          |        |
+| GDD_MANAGE_ENABLE          | 是否开启内建http接口：`/go-doudou/doc`, `/go-doudou/openapi.json`, `/go-doudou/prometheus`, `/go-doudou/registry`, `/go-doudou/config` | true       |        |
+| GDD_MANAGE_USER            | 内建http接口的http basic校验用户名                                                                    | admin      |        |
+| GDD_MANAGE_PASS            | 内建http接口的http basic校验密码                                                                      | admin      |        |
+| GDD_TRACING_METRICS_ROOT   | jaeger调用链监控的`metrics root`                                                                     | Go-doudou  |        |
+| GDD_WEIGHT                 | 服务实例的权重                                                                                       | 1          |        |
+| GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`memberlist`, `nacos`                                                           | memberlist |        |
 
-| Environment Variable    | Description                                                                                                                                                                                                                                                                                   | Default | Required |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| GDD_MEM_SEED            | seed address for join memberlist cluster. If empty or not set, this node will create a new cluster for other nodes to join                                                                                                                                                                    |         |          |
-| GDD_MEM_NAME            | for dev and test purpose only. unique name of this node in cluster. if empty or not set, hostname will be used instead                                                                                                                                                                        |         |          |
-| GDD_MEM_HOST            | specify `AdvertiseAddr` attribute of memberlist config struct. if GDD_MEM_HOST starts with dot such as `.seed-svc-headless.default.svc.cluster.local`, it will be prefixed with `hostname` to be `seed-2.seed-svc-headless.default.svc.cluster.local` for supporting k8s statefulset service. By default, private ip is used |         |          |
-| GDD_MEM_PORT            | TCP and UDP port for memberlist instance to listen on                                                                                                                                                                                                                                         | 7946    |          |
-| GDD_MEM_DEAD_TIMEOUT    | dead node will be removed from node map if not received refute messages from it in GDD_MEM_DEAD_TIMEOUT duration                                                                                                                                                                              | 60s     |          |
-| GDD_MEM_SYNC_INTERVAL   | local node will synchronize states from other random node every GDD_MEM_SYNC_INTERVAL duration                                                                                                                                                                                                | 60s     |          |
-| GDD_MEM_RECLAIM_TIMEOUT | dead node will be replaced with new node with the same name but different full address in GDD_MEM_RECLAIM_TIMEOUT duration                                                                                                                                                                    | 3s      |          |
-| GDD_MEM_PROBE_INTERVAL  | ping remote nodes for failure detection every GDD_MEM_PROBE_INTERVAL duration                                                                                                                                                                                                                 | 5s      |          |
-| GDD_MEM_PROBE_TIMEOUT   | probe fail if not receive ack message in GDD_MEM_PROBE_TIMEOUT duration                                                                                                                                                                                                                       | 3s      |          |
-| GDD_MEM_SUSPICION_MULT  | The multiplier for determining the time an inaccessible node is considered suspect before declaring it dead                                                                                                                                                                                   | 6       |          |
-| GDD_MEM_GOSSIP_NODES    | how many remote nodes you want to send gossip messages                                                                                                                                                                                                                                        | 4       |          |
-| GDD_MEM_GOSSIP_INTERVAL | gossip messages in queue every GDD_MEM_GOSSIP_INTERVAL duration                                                                                                                                                                                                                               | 500ms   |          |
-| GDD_MEM_TCP_TIMEOUT     | TCP request will timeout in GDD_MEM_TCP_TIMEOUT duration                                                                                                                                                                                                                                      | 30s     |          |
-| GDD_MEM_INDIRECT_CHECKS | the number of nodes that will be asked to perform an indirect probe of a node in the case a direct probe fails                                                                                                                                                                                | 3       |          |
-| GDD_MEM_WEIGHT          | `Deprecated` node weight for smooth weighted round-robin balancing                                                                                                                                                                                                                            | 0       |          |
-| GDD_MEM_WEIGHT_INTERVAL | node weight will be calculated every GDD_MEM_WEIGHT_INTERVAL                                                                                                                                                                                                                                  | 0s      |          |
-| GDD_MEM_LOG_DISABLE     | whether disable memberlist logging                                                                                                                                                                                                                                                            | false   |          |
-| GDD_MEM_CIDRS_ALLOWED   | If not set, allow any connection (default), otherwise specify all networks allowed connecting (you must specify IPv6/IPv4 separately). Example: GDD_MEM_CIDRS_ALLOWED=172.28.0.0/16                                                                                                           |         |          |
+## Memberlist配置
 
-## Nacos Configuration
+| 环境变量名       | 描述                                                                                                       | 默认值    | 是否必须       |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
+| GDD_MEM_SEED            | memberlist集群的种子地址，多个地址用英文逗号分隔，如果不设置，则不加入任何集群                                |            |                                         |
+| GDD_MEM_NAME            | 仅用于开发和测试，实例的名称，该名称必须保证在集群中唯一。如果不设置，默认值取主机名                             |         |          |
+| GDD_MEM_HOST            | 集群中其他实例对该实例的访问地址，默认值取主机的私有IP                                                      |         |          |
+| GDD_MEM_PORT            | 实例的监听端口                                                                                        | 7946    |          |
+| GDD_MEM_DEAD_TIMEOUT    | 在环境变量`GDD_MEM_DEAD_TIMEOUT`指定的超时时间内仍未收到离线实例的表示仍在线的消息，则从实例列表中删除该实例      | 60s     |          |
+| GDD_MEM_SYNC_INTERVAL   | 发起同步实例列表的TCP请求的间隔时间                                                                      | 60s     |          |
+| GDD_MEM_RECLAIM_TIMEOUT | 超过此环境变量设置的超时时间，离线实例会被具有相同名字但不同地址的实例换掉。如果未到超时时间，该新实例会始终被拒绝加入集群   | 3s      |          |
+| GDD_MEM_PROBE_INTERVAL  | 发起实例探活的UDP请求的间隔时间                                                                              | 5s      |          |
+| GDD_MEM_PROBE_TIMEOUT   | 单次实例探活的超时时间                                                                                      | 3s      |          |
+| GDD_MEM_SUSPICION_MULT  | 计算宣告疑似离线实例已离线的超时时间的系数                                                                     | 6       |          |
+| GDD_MEM_GOSSIP_NODES    | 定时发送UDP消息的单次目标实例数量                                                                            | 4       |          |
+| GDD_MEM_GOSSIP_INTERVAL | 定时发送UDP消息的间隔时间                                                                                  | 500ms   |          |
+| GDD_MEM_TCP_TIMEOUT     | 单次TCP请求的超时时间                                                                                      | 30s     |          |
+| GDD_MEM_INDIRECT_CHECKS | 如果UDP探活失败，帮助该实例做间接探活的其他实例的数量                                                           | 3       |          |
+| GDD_MEM_WEIGHT          | `已废弃`客户端平滑加权负载均衡算法所需要的实例权重，请用`GDD_WEIGHT`                                           | 0       |          |
+| GDD_MEM_WEIGHT_INTERVAL | 程序自动计算当前实例权重值并发出UDP消息的间隔时间，默认值为`0s`，即默认禁用该功能，实例权重取`GDD_WEIGHT`，若未设置，则取`GDD_MEM_WEIGHT`，若也未设置，则取默认值`1` | 0s      |          |
+| GDD_MEM_LOG_DISABLE     | 是否关闭memberlist日志                                                                                 | false   |          |
+| GDD_MEM_CIDRS_ALLOWED   | 如果未设置，则放行所有实例发来的请求。如果设置，则只允许符合条件的实例的请求通过。示例：`GDD_MEM_CIDRS_ALLOWED=172.28.0.0/16`  |         |          |
 
-| Environment Variable              | Description                                                                                       | Default          | Required |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------- | -------- |
-| GDD_NACOS_NAMESPACE_ID            | the namespaceId of Nacos, empty means public                                                      |                  |          |
-| GDD_NACOS_TIMEOUT_MS              | timeout for requesting Nacos server in milliseconds                                               | 10000            |          |
-| GDD_NACOS_NOT_LOAD_CACHE_AT_START | not to load persistent nacos service info in CacheDir at start time                               | false            |          |
-| GDD_NACOS_LOG_DIR                 | the directory for log                                                                             | /tmp/nacos/log   |          |
-| GDD_NACOS_CACHE_DIR               | the directory for persist nacos service info                                                      | /tmp/nacos/cache |          |
-| GDD_NACOS_LOG_LEVEL               | the level of log, it's must be `debug`,`info`,`warn`,`error`                                      | info             |          |
-| GDD_NACOS_SERVER_ADDR             | nacos server connection url, multiple urls are joined by comma                                    |                  |          |
-| GDD_NACOS_REGISTER_HOST           | service instance host to be registered to nacos server, if not set, private ip is used by default |                  |          |
+## Nacos配置
+
+| 环境变量名       | 描述                                                                                                       | 默认值    | 是否必须                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
+| GDD_NACOS_NAMESPACE_ID            | 命名空间                                                                                 | public                 |          |
+| GDD_NACOS_TIMEOUT_MS              | 请求超时时间，单位毫秒                                                                      | 10000            |          |
+| GDD_NACOS_NOT_LOAD_CACHE_AT_START | 程序启动时是否从磁盘缓存中加载服务列表                                                         | false            |          |
+| GDD_NACOS_LOG_DIR                 | 日志目录地址                                                                               | /tmp/nacos/log   |          |
+| GDD_NACOS_CACHE_DIR               | 服务列表磁盘缓存地址                                                      | /tmp/nacos/cache |          |
+| GDD_NACOS_LOG_LEVEL               | 日志等级，可选项：`debug`,`info`,`warn`,`error`                                      | info             |          |
+| GDD_NACOS_SERVER_ADDR             | Nacos服务器连接地址，多个地址用英文逗号分隔                                         |                  |          |
+| GDD_NACOS_REGISTER_HOST           | 服务实例的注册地址，默认值取主机的私有IP |                  |          |

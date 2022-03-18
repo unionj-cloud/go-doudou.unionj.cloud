@@ -18,7 +18,7 @@ If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can se
 | GDD_READ_TIMEOUT           | http server connection read timeout                                                                                                                       | 15s        |                                             |
 | GDD_IDLE_TIMEOUT           | http server connection idle timeout                                                                                                                       | 60s        |                                             |
 | GDD_ROUTE_ROOT_PATH        | prefix string to each of http api routes                                                                                                                  |            |                                             |
-| GDD_SERVICE_NAME           | service name                                                                                                                                              |            | Yes if you develop microservice application |
+| GDD_SERVICE_NAME           | service name                                                                                                                                 |            | Yes |
 | GDD_HOST                   | host for the http server to listen on                                                                                                                     |            |                                             |
 | GDD_PORT                   | port for the http server to listen on                                                                                                                     | 6060       |                                             |
 | GDD_RETRY_COUNT            | client retry count                                                                                                                                        | 0          |                                             |
@@ -56,7 +56,7 @@ If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can se
 
 | Environment Variable              | Description                                                                                       | Default          | Required |
 | --------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------- | -------- |
-| GDD_NACOS_NAMESPACE_ID            | the namespaceId of Nacos, empty means public                                                      |                  |          |
+| GDD_NACOS_NAMESPACE_ID            | the namespaceId of Nacos                                                                          | public           |          |
 | GDD_NACOS_TIMEOUT_MS              | timeout for requesting Nacos server in milliseconds                                               | 10000            |          |
 | GDD_NACOS_NOT_LOAD_CACHE_AT_START | not to load persistent nacos service info in CacheDir at start time                               | false            |          |
 | GDD_NACOS_LOG_DIR                 | the directory for log                                                                             | /tmp/nacos/log   |          |
