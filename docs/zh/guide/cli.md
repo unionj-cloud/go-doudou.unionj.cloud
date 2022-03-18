@@ -240,81 +240,112 @@ Flags:
 
 - 安装go-doudou
 
-  ```shell
-  go get -v github.com/unionj-cloud/go-doudou@v1.0.2
-  ```
+```shell
+go get -v github.com/unionj-cloud/go-doudou@v1.0.2
+```
 
-- 克隆示例代码
+- 克隆示例代码，切到`ddldemo`路径
 
-  ```
-  git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
-  ```
+```shell
+git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
+```
 
-- Update database table struct and generate dao layer code
+- 启动mysql容器
 
-  ```shell
-  go-doudou ddl --dao --pre=ddl_
-  ```
+```shell
+docker-compose -f docker-compose.yml up -d
+```
 
-  ```shell
-  ➜  ddldemo git:(main) ls -la dao
-  total 56
-  drwxr-xr-x   6 wubin1989  staff   192  9  1 00:28 .
-  drwxr-xr-x  14 wubin1989  staff   448  9  1 00:28 ..
-  -rw-r--r--   1 wubin1989  staff   953  9  1 00:28 base.go
-  -rw-r--r--   1 wubin1989  staff    45  9  1 00:28 userdao.go
-  -rw-r--r--   1 wubin1989  staff  9125  9  1 00:28 userdaoimpl.go
-  -rw-r--r--   1 wubin1989  staff  5752  9  1 00:28 userdaosql.go
-  ```
+- 更新表结构和生成dao层代码
 
-- Run main function
+```shell
+go-doudou ddl --dao --pre=ddl_
+```
 
-  ```
-  ➜  ddldemo git:(main) go run main.go       
-  INFO[0000] user jack's id is 14                         
-  INFO[0000] returned user jack's id is 14                
-  INFO[0000] returned user jack's average score is 97.534
-  ```
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(main) ls -la dao
+total 56
+drwxr-xr-x   6 wubin1989  staff   192  9  1 00:28 .
+drwxr-xr-x  14 wubin1989  staff   448  9  1 00:28 ..
+-rw-r--r--   1 wubin1989  staff   953  9  1 00:28 base.go
+-rw-r--r--   1 wubin1989  staff    45  9  1 00:28 userdao.go
+-rw-r--r--   1 wubin1989  staff  9125  9  1 00:28 userdaoimpl.go
+-rw-r--r--   1 wubin1989  staff  5752  9  1 00:28 userdaosql.go
+```
 
-- Delete domain and dao folder
+- 运行单元测试
 
-  ```shell
-  ➜  ddldemo git:(main) rm -rf dao && rm -rf domain
-  ```
+```shell
+go test -race ./... -count=1
+```
 
-- Generate go struct and dao layer code from database
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(master) go test -race ./... -count=1
+?   	doudoudemo	[no test files]
+ok  	doudoudemo/dao	0.100s
+?   	doudoudemo/domain	[no test files]
+```
 
-  ```shell
-  go-doudou ddl --reverse --dao --pre=ddl_
-  ```
+- 运行`main`函数
 
-  ```shell
-  ➜  ddldemo git:(main) ✗ ll
-  total 272
-  -rw-r--r--  1 wubin1989  staff   1.0K  9  1 00:27 LICENSE
-  -rw-r--r--  1 wubin1989  staff    85B  9  1 00:27 Makefile
-  -rw-r--r--  1 wubin1989  staff     9B  9  1 00:27 README.md
-  drwxr-xr-x  6 wubin1989  staff   192B  9  1 00:35 dao
-  drwxr-xr-x  3 wubin1989  staff    96B  9  1 00:35 domain
-  -rw-r--r--  1 wubin1989  staff   339B  9  1 00:27 go.mod
-  -rw-r--r--  1 wubin1989  staff   116K  9  1 00:27 go.sum
-  -rw-r--r--  1 wubin1989  staff   2.0K  9  1 00:27 main.go
-  ```
+```shell
+go run main.go   
+```
 
-- Run main function again
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(master) go run main.go              
+INFO[2022-03-18 09:14:44] user jack's id is 8                          
+INFO[2022-03-18 09:14:44] returned user jack's id is 8                 
+INFO[2022-03-18 09:14:44] returned user jack's average score is 97.534 
+```
 
-  ```
-  ➜  ddldemo git:(main) ✗ go run main.go                          
-  INFO[0000] user jack's id is 15                         
-  INFO[0000] returned user jack's id is 15                
-  INFO[0000] returned user jack's average score is 97.534 
-  ```
+- 删除`domain`文件夹，`dao/userdaoimpl.go`文件和`dao/userdaosql.go`文件，并执行如下命令，我们来看从表结构生成`go`代码的特性
 
-  
+```shell
+go-doudou ddl --reverse --dao --pre=ddl_
+```
+
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(master) go-doudou ddl --reverse --dao --pre=ddl_
+WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/base.go already exists 
+WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/userdao.go already exists 
+```
+
+- 再次执行单元测试
+
+```shell
+go test -race ./... -count=1
+```
+
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(master) ✗ go test -race ./... -count=1
+?   	doudoudemo	[no test files]
+ok  	doudoudemo/dao	0.092s
+?   	doudoudemo/domain	[no test files]
+```
+
+- 再次执行`main`函数
+
+```shell
+go run main.go   
+```
+
+你可以看到如下的命令行输出:
+```
+➜  ddldemo git:(master) ✗ go run main.go              
+INFO[2022-03-18 09:24:57] user jack's id is 11                         
+INFO[2022-03-18 09:24:57] returned user jack's id is 11                
+INFO[2022-03-18 09:24:57] returned user jack's average score is 97.534 
+```
 
 ### API
 
-#### Example
+#### 示例
 ```go
 package domain
 
@@ -374,21 +405,21 @@ type User struct {
 }
 ```
 
-#### Tags
+#### 标签
 
 ##### pk
 
-Primary key
+表示主键
 
 ##### auto
 
-Autoincrement
+表示自增
 
 ##### type
 
-Column type. Not required.
+字段类型，非必须。如果没有显式设置，默认的对应规则如表格所示
 
-| Go Type（pointer） | Column Type  |
+| Go语言类型（包括指针类型） | Mysql字段类型  |
 | :----------------: | :----------: |
 | int, int16, int32  |     int      |
 |       int64        |    bigint    |
@@ -401,45 +432,47 @@ Column type. Not required.
 
 ##### default
 
-Default value. If value was database built-in function or expression made by built-in functions, not need single quote marks. If value was literal value, it should be quoted by single quote marks.
+默认值。如果是mysql数据库内置的函数或由内置函数构成的表达式，则不需要单引号。如果是字面值，则需要单引号。
 
 ##### extra
 
-Extra definition. Example: "on update CURRENT_TIMESTAMP"，"comment 'cellphone number'"  
-**Note：don't use ; and : in comment**
+额外定义。示例："on update CURRENT_TIMESTAMP"，"comment 'cellphone number'"  
+**注意：在`comment`里不要出现英文分号`;`和英文冒号`:`**
 
 ##### index
 
-- Format："index:Name,Order,Sort" or "index"
-- Name: index name. string. If multiple fields use the same index name, the index will be created as composite index. Not required. Default index name is column name + _idx
-- Order：int
-- Sort：string. Only accept asc and desc. Not required. Default is asc
+设置索引。
+
+- 格式："index:Name,Order,Sort" or "index"
+- `Name`: 索引名称，字符串类型。如果有多个字段设置了相同的索引名称，则会在该表中创建复合索引。非必须。默认值为`字段名_idx`
+- `Order`: 顺序，`int`类型 
+- `Sort`: 排序规则，字符串类型。仅接受两种值：`asc` 和 `desc`。非必须。默认值是`asc`
 
 ##### unique
 
-Unique index. Usage is the same as index.
+唯一索引，用法同索引。
 
 ##### null
 
-Nullable. **Note: if the field is a pointer, null is default.**
+可接受`null`值. **注意：如果字段类型是指针类型，则默认可接受`null`值**
 
 ##### unsigned
 
-Unsigned
+无符号
 
 ##### fk
 
-- Format："fk:ReferenceTableName,ReferenceTablePrimaryKey,Constraint,Action"  
-- ReferenceTableName: reference table name
-- ReferenceTablePrimaryKey: reference table primary key such as `id`
-- Constraint: foreign key constraint such as `fk_publisher`
-- Action: for example: `ON DELETE CASCADE ON UPDATE NO ACTION`
+设置外键
 
+- 格式："fk:ReferenceTableName,ReferenceTablePrimaryKey,Constraint,Action"  
+- `ReferenceTableName`：关联表名称
+- `ReferenceTablePrimaryKey`：关联表主键，如`id`
+- `Constraint`：外键名称，如`fk_publisher`
+- `Action`：示例：`ON DELETE CASCADE ON UPDATE NO ACTION`
 
+#### Dao层代码
 
-#### Dao layer code
-
-##### CRUD
+##### 单表CRUD
 
 ```go
 package dao
@@ -465,10 +498,9 @@ type Base interface {
 }
 ```
 
+##### 数据库事务
 
-
-##### Transaction
-Example：
+示例：
 ```go
 func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, sheet string) (err error) {
 	types := []string{"food", "tool"}
@@ -487,8 +519,9 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 	}
 	colNum := len(rows[0])
 	rows = rows[1:]
+	// 封装数据库连接实例到GddDB类型
     gdddb := wrapper.GddDB{receiver.db}
-	// begin transaction
+	// 开启事务
 	tx, err = gdddb.BeginTxx(ctx, nil)
 	if err != nil {
 		return errors.Wrap(err, "")
@@ -503,7 +536,7 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 			}
 		}
 	}()
-	// inject tx as ddl.Querier into dao layer implementation instance
+	// 将tx作为ddl.Querier实例注入dao层的工厂方法创建dao实例
 	mdao := dao.NewMaterialDao(tx)
 	for _, item := range rows {
 		if len(item) == 0 {
@@ -528,13 +561,13 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 			Type:        int8(sliceutils.IndexOf(sheet, types)),
 			Note:        note,
 		}); err != nil {
-			// rollback if err != nil
+			// 如果有错误，则回滚
 			_ = tx.Rollback()
 			return errors.Wrap(err, "")
 		}
 	}
 END:
-	// commit
+	// 提交事务
 	if err = tx.Commit(); err != nil {
         _ = tx.Rollback()
 		return errors.Wrap(err, "")
@@ -543,11 +576,9 @@ END:
 }
 ```
 
+#### Sql语句构建DSL
 
-
-#### Query Dsl
-
-##### Example
+##### 示例
 
 ```go
 func ExampleCriteria() {
@@ -646,6 +677,49 @@ func ExampleCriteria() {
     //cc.`name` like ? [%ba%]
 }
 ```
+
+### 新增dao层代码
+
+实际开发中，我们一定需要自己编写一些更复杂的CRUD代码。怎么做呢？下面我们以`user`表为例来说明开发步骤：
+
+- 首先需要在`dao`文件夹下的`userdao.go`文件里的`UserDao`接口里定义方法，例如：
+```go
+type UserDao interface {
+	Base
+	FindUsersByHobby(ctx context.Context, hobby string) ([]domain.User, error)
+}
+```
+我们这里加了一个`FindUsersByHobby`方法
+
+- 然后我们需要在`dao`文件夹下新建一个文件`userdaoimplext.go`，文件名任意，但推荐以去掉前缀的表名 + `daoimplext.go`的方式命名
+
+- 在新创建的文件里编写`FindUsersByHobby`方法的实现
+```go
+func (receiver UserDaoImpl) FindUsersByHobby(ctx context.Context, hobby string) (users []domain.User, err error) {
+	sqlStr := `select * from ddl_user where hobby = ? and delete_at is null`
+	err = receiver.db.SelectContext(ctx, &users, receiver.db.Rebind(sqlStr), hobby)
+	return
+}
+```
+- 我们新建一个测试文件`userdaoimplext_test.go`，编写单元测试
+```go
+func TestUserDaoImpl_FindUsersByHobby(t *testing.T) {
+	t.Parallel()
+	u := dao.NewUserDao(db)
+	users, err := u.FindUsersByHobby(context.Background(), "football")
+	require.NoError(t, err)
+	require.NotEqual(t, 0, len(users))
+}
+```
+
+### 最佳实践
+
+下面说的几点最佳实践只是作者总结的，仅供参考。
+
+- 先通过`Navicat`或者`Mysql Workbench`之类的数据库设计工具整体设计表结构
+- 再通过命令`go-doudou ddl --reverse --dao`命令一把生成Go代码，`--reverse`参数仅在初始化项目时使用
+- 后续开发迭代过程中，修改`domain`文件夹的代码以后，须先将`dao`文件夹中的以`sql.go`为后缀的文件，如`userdaosql.go`删掉，再通过命令`go-doudou ddl --dao`将修改同步到数据库表结构，同时重新生成`sql.go`为后缀的文件。如果修改了表名称或者表前缀，则`dao`文件夹中的以`daoimpl.go`为后缀的文件，如`userdaoimpl.go`也需要删掉并重新生成。
+- 新增dao层代码一定要在新建的文件里编写，一定不要人工修改`dao`文件夹里的`base.go`、以`daoimpl.go`为后缀和以`daosql.go`为后缀的这三类文件的代码，在整个项目生命周期里这三类文件都必须是可以随时删除随时重新生成且不影响程序功能的
 
 ## name
 

@@ -242,77 +242,109 @@ Flags:
 
 - Install go-doudou
 
-  ```shell
-  go get -v github.com/unionj-cloud/go-doudou@v1.0.2
-  ```
+```shell
+go get -v github.com/unionj-cloud/go-doudou@v1.0.2
+```
 
-- Clone demo repository
+- Clone demo repository and `cd ddldemo`
 
-  ```
-  git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
-  ```
+```shell
+git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
+```
+
+- Start mysql container
+
+```shell
+docker-compose -f docker-compose.yml up -d
+```
 
 - Update database table struct and generate dao layer code
 
-  ```shell
-  go-doudou ddl --dao --pre=ddl_
-  ```
+```shell
+go-doudou ddl --dao --pre=ddl_
+```
 
-  ```shell
-  ➜  ddldemo git:(main) ls -la dao
-  total 56
-  drwxr-xr-x   6 wubin1989  staff   192  9  1 00:28 .
-  drwxr-xr-x  14 wubin1989  staff   448  9  1 00:28 ..
-  -rw-r--r--   1 wubin1989  staff   953  9  1 00:28 base.go
-  -rw-r--r--   1 wubin1989  staff    45  9  1 00:28 userdao.go
-  -rw-r--r--   1 wubin1989  staff  9125  9  1 00:28 userdaoimpl.go
-  -rw-r--r--   1 wubin1989  staff  5752  9  1 00:28 userdaosql.go
-  ```
+You can see below output from terminal:
+```
+➜  ddldemo git:(main) ls -la dao
+total 56
+drwxr-xr-x   6 wubin1989  staff   192  9  1 00:28 .
+drwxr-xr-x  14 wubin1989  staff   448  9  1 00:28 ..
+-rw-r--r--   1 wubin1989  staff   953  9  1 00:28 base.go
+-rw-r--r--   1 wubin1989  staff    45  9  1 00:28 userdao.go
+-rw-r--r--   1 wubin1989  staff  9125  9  1 00:28 userdaoimpl.go
+-rw-r--r--   1 wubin1989  staff  5752  9  1 00:28 userdaosql.go
+```
 
-- Run main function
+- Run unit tests
 
-  ```
-  ➜  ddldemo git:(main) go run main.go       
-  INFO[0000] user jack's id is 14                         
-  INFO[0000] returned user jack's id is 14                
-  INFO[0000] returned user jack's average score is 97.534
-  ```
+```shell
+go test -race ./... -count=1
+```
 
-- Delete domain and dao folder
+You can see below output from terminal:
+```
+➜  ddldemo git:(master) go test -race ./... -count=1
+?   	doudoudemo	[no test files]
+ok  	doudoudemo/dao	0.100s
+?   	doudoudemo/domain	[no test files]
+```
 
-  ```shell
-  ➜  ddldemo git:(main) rm -rf dao && rm -rf domain
-  ```
+- Run `main` function
+  
+```shell
+go run main.go   
+```
 
-- Generate go struct and dao layer code from database
+You can see below output from terminal:
 
-  ```shell
-  go-doudou ddl --reverse --dao --pre=ddl_
-  ```
+```
+➜  ddldemo git:(main) go run main.go       
+INFO[2022-03-18 09:14:44] user jack's id is 8                          
+INFO[2022-03-18 09:14:44] returned user jack's id is 8                 
+INFO[2022-03-18 09:14:44] returned user jack's average score is 97.534 
+```
 
-  ```shell
-  ➜  ddldemo git:(main) ✗ ll
-  total 272
-  -rw-r--r--  1 wubin1989  staff   1.0K  9  1 00:27 LICENSE
-  -rw-r--r--  1 wubin1989  staff    85B  9  1 00:27 Makefile
-  -rw-r--r--  1 wubin1989  staff     9B  9  1 00:27 README.md
-  drwxr-xr-x  6 wubin1989  staff   192B  9  1 00:35 dao
-  drwxr-xr-x  3 wubin1989  staff    96B  9  1 00:35 domain
-  -rw-r--r--  1 wubin1989  staff   339B  9  1 00:27 go.mod
-  -rw-r--r--  1 wubin1989  staff   116K  9  1 00:27 go.sum
-  -rw-r--r--  1 wubin1989  staff   2.0K  9  1 00:27 main.go
-  ```
+- Delete `domain` folder, `dao/userdaoimpl.go` file and `dao/userdaosql.go` file, then run below command to generate go code from tables
+
+```shell
+go-doudou ddl --reverse --dao --pre=ddl_
+```
+
+You can see below output from terminal:
+```
+➜  ddldemo git:(master) go-doudou ddl --reverse --dao --pre=ddl_
+WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/base.go already exists 
+WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/userdao.go already exists 
+```
+
+- Run unit tests again
+
+```shell
+go test -race ./... -count=1
+```
+
+You can see below output from terminal:
+```
+➜  ddldemo git:(master) ✗ go test -race ./... -count=1
+?   	doudoudemo	[no test files]
+ok  	doudoudemo/dao	0.092s
+?   	doudoudemo/domain	[no test files]
+```
 
 - Run main function again
 
-  ```
-  ➜  ddldemo git:(main) ✗ go run main.go                          
-  INFO[0000] user jack's id is 15                         
-  INFO[0000] returned user jack's id is 15                
-  INFO[0000] returned user jack's average score is 97.534 
-  ```
+```shell
+go run main.go   
+```
 
-  
+You can see below output from terminal:
+```
+➜  ddldemo git:(master) ✗ go run main.go              
+INFO[2022-03-18 09:24:57] user jack's id is 11                         
+INFO[2022-03-18 09:24:57] returned user jack's id is 11                
+INFO[2022-03-18 09:24:57] returned user jack's average score is 97.534 
+```
 
 ### API
 
@@ -388,9 +420,9 @@ Autoincrement
 
 ##### type
 
-Column type. Not required.
+Column type. Not required. If you don't set this tag explicitly, default rule is as below table
 
-| Go Type（pointer） | Column Type  |
+| Go Type（including pointer type） | Column Type  |
 | :----------------: | :----------: |
 | int, int16, int32  |     int      |
 |       int64        |    bigint    |
@@ -412,10 +444,10 @@ Extra definition. Example: "on update CURRENT_TIMESTAMP"，"comment 'cellphone n
 
 ##### index
 
-- Format："index:Name,Order,Sort" or "index"
-- Name: index name. string. If multiple fields use the same index name, the index will be created as composite index. Not required. Default index name is column name + _idx
-- Order：int
-- Sort：string. Only accept asc and desc. Not required. Default is asc
+- Format: "index:Name,Order,Sort" or "index"
+- `Name`: index name. string. If multiple fields use the same index name, the index will be created as composite index. Not required. Default index name is column name + _idx
+- `Order`:int
+- `Sort`: string. Only accept `asc` and `desc`. Not required. Default is asc
 
 ##### unique
 
@@ -441,7 +473,7 @@ Unsigned
 
 #### Dao layer code
 
-##### CRUD
+##### Single Table CRUD
 
 ```go
 package dao
@@ -466,8 +498,6 @@ type Base interface {
   PageMany(ctx context.Context, page query.Page, where ...query.Q) (query.PageRet, error)
 }
 ```
-
-
 
 ##### Transaction
 Example：
@@ -544,8 +574,6 @@ END:
 	return err
 }
 ```
-
-
 
 #### Query Dsl
 
@@ -648,6 +676,49 @@ func ExampleCriteria() {
     //cc.`name` like ? [%ba%]
 }
 ```
+
+### Add Dao Layer Code
+
+In development, we must need to write some custom dao layer CRUD code. How? Let me explain it using `user` table as an example: 
+
+- At first, we should define methods of `UserDao` interface in `dao/userdao.go` file, for example:
+```go
+type UserDao interface {
+	Base
+	FindUsersByHobby(ctx context.Context, hobby string) ([]domain.User, error)
+}
+```
+We defined a `FindUsersByHobby` method here
+
+- Then we should create a new file named `userdaoimplext.go` in `dao` folder. The file name can be arbitrary, but recommend to name it by table name got rid of prefix + `daoimplext.go` pattern
+
+- We write our own implementation for `FindUsersByHobby` method in the new file
+```go
+func (receiver UserDaoImpl) FindUsersByHobby(ctx context.Context, hobby string) (users []domain.User, err error) {
+	sqlStr := `select * from ddl_user where hobby = ? and delete_at is null`
+	err = receiver.db.SelectContext(ctx, &users, receiver.db.Rebind(sqlStr), hobby)
+	return
+}
+```
+- We create a new file `userdaoimplext_test.go` to write unit tests
+```go
+func TestUserDaoImpl_FindUsersByHobby(t *testing.T) {
+	t.Parallel()
+	u := dao.NewUserDao(db)
+	users, err := u.FindUsersByHobby(context.Background(), "football")
+	require.NoError(t, err)
+	require.NotEqual(t, 0, len(users))
+}
+```
+
+### Best Practices
+
+Below best practices are from author's experience, only for reference.
+
+- Design all table structures by database design tools like `Navicat` or `Mysql Workbench` at the beginning of development.
+- Then run `go-doudou ddl --reverse --dao` to generate initial code. Using `--reverse` flag when initialising projects only.
+- At the following project iteration, after modified domain structs in `domain` folder, you should delete `sql.go` suffixed files such as `userdaosql.go` at first, then run `go-doudou ddl --dao` to sync changes to table structures and generate `sql.go` suffixed files at the same time. If you also changed table name or table name prefix, you should also delete `daoimpl.go` suffixed files such as `userdaoimpl.go` and regenerate them.
+- Custom dao layer code must be written in new files, don't modify `base.go` file, `daoimpl.go` suffixed files and `daosql.go` suffixed files manually. In the whole project lifecycle, you must make sure that these files could be removed and regenerated at any time, but not produce bugs to the program.
 
 ## name
 
