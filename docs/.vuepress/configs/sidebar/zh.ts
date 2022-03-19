@@ -13,7 +13,6 @@ export const zh: SidebarConfig = {
         '/zh/guide/rest.md',
         '/zh/guide/configuration.md',
         '/zh/guide/deployment.md',
-        '/zh/guide/migration.md',
       ],
     },
   ],
