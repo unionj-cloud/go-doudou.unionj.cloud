@@ -382,13 +382,13 @@ effect when environment variable `GDD_LOG_LEVEL` is set to `debug`.
 ### 示例
 
 ```go 
-// you can use lumberjack to add log rotate feature to your service
+// 你可以用lumberjack这个库给服务增加日志rotate的功能
 logger.Init(logger.WithWritter(io.MultiWriter(os.Stdout, &lumberjack.Logger{
     Filename:   filepath.Join(os.Getenv("LOG_PATH"), fmt.Sprintf("%s.log", ddconfig.GddServiceName.Load())),
-    MaxSize:    5,  // Max megabytes before log is rotated
-    MaxBackups: 10, // Max number of old log files to keep
-    MaxAge:     7,  // Max number of days to retain log files
-    Compress:   true,
+    MaxSize:    5,  // 单份日志文件最大5M，超过就会创建新的日志文件
+    MaxBackups: 10, // 最多保留10份日志文件
+    MaxAge:     7,  // 日志文件最长保留7天
+    Compress:   true, // 是否开启日志压缩
 })))
 ```
 

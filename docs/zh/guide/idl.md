@@ -32,12 +32,12 @@ import (
 	"usersvc/vo"
 )
 
-// Usersvc is user management service
-// You should set Bearer Token header when you request protected endpoints such as user detail, user pagination and upload avatar.
-// You can add doc for whole service here
+// Usersvc是用户管理服务
+// 你需要设置Authentication请求头，带上bearer token参数来访问被保护的接口，如用户信息查询接口、用户分页查询接口和上传头像接口。
+// 你可以在这里加上服务整体的文档说明
 type Usersvc interface {
-	// PageUsers is user pagination api
-	// demo how to define post request api which accepts application/json content-type
+	// PageUsers 用户分页查询接口
+	// 演示如何定义post请求的，application/json类型的接口
 	PageUsers(ctx context.Context,
 		// pagination parameter
 		query vo.PageQuery) (
@@ -46,8 +46,8 @@ type Usersvc interface {
 		// error
 		err error)
 
-	// GetUser is user detail api
-	// demo how to define get http request with query string parameters
+	// GetUser 用户详情接口
+	// 演示如何定义get请求的，带查询字符串参数的接口
 	GetUser(ctx context.Context,
 		// user id
 		userId int) (
@@ -56,8 +56,8 @@ type Usersvc interface {
 		// error
 		err error)
 
-	// PublicSignUp is user signup api
-	// demo how to define post request api which accepts application/x-www-form-urlencoded content-type
+	// PublicSignUp 用户注册接口
+	// 演示如何定义post请求的，application/x-www-form-urlencoded类型的接口
 	PublicSignUp(ctx context.Context,
 		// username
 		username string,
@@ -69,8 +69,8 @@ type Usersvc interface {
 		// return OK if success
 		data string, err error)
 
-	// PublicLogIn is user login api
-	// demo how to do authentication and issue token
+	// PublicLogIn 用户登录接口
+	// 演示如何定义post请求的，application/x-www-form-urlencoded类型的接口
 	PublicLogIn(ctx context.Context,
 		// username
 		username string,
@@ -79,18 +79,18 @@ type Usersvc interface {
 		// token
 		data string, err error)
 
-	// UploadAvatar is avatar upload api
-	// demo how to define file upload api
-	// NOTE: there must be at least one []*v3.FileModel or *v3.FileModel input parameter
+	// UploadAvatar 头像上传接口
+	// 演示如何定义文件上传接口
+	// 注意：必须要有至少一个v3.FileModel类型或[]v3.FileModel类型的入参
 	UploadAvatar(ctx context.Context,
 		// user avatar
 		avatar v3.FileModel, id int) (
 		// return OK if success
 		data string, err error)
 
-	// GetPublicDownloadAvatar is avatar download api
-	// demo how to define file download api
-	// NOTE: there must be one and at most one *os.File output parameter
+	// GetPublicDownloadAvatar 头像下载接口
+	// 演示如何定义文件下载接口
+	// 注意：一定要有一个且仅有一个*os.File类型的出参
 	GetPublicDownloadAvatar(ctx context.Context,
 		// user id
 		userId int) (
