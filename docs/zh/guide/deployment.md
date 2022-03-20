@@ -10,22 +10,22 @@
 export GDD_ENV=prod && go build -o api cmd/main.go 
 ```
 
-3. 启动可执行文件，推荐用screen命令或[pm2](https://pm2.keymetrics.io/)，这里以screen命令为例，先创建一个窗口`screen -S app`，窗口名字叫`app`，启动程序
-```shell
-./app
-```
-`ctrl + a + d`可以退出screen，`screen -r app`可以打开刚才创建的app窗口，查看命令行终端输出的日志。
+3. 启动可执行文件，推荐用screen命令或[pm2](https://pm2.keymetrics.io/)，这里以screen命令为例，先创建一个窗口`screen -S app`，窗口名字叫`app`，启动程序`./app`。`ctrl + a + d`可以退出screen，`screen -r app`可以打开刚才创建的app窗口，查看命令行终端输出的日志。
 
 :::tip
 如果是Centos服务器，screen的安装命令是`yum install -y screen`。
+
 想看当前开启的窗口列表，可用`screen -ls`命令
+
 ```shell
 ➜  ~ screen -ls   
 There is a screen on:
 	16048.app	(Detached)
 1 Socket in /var/run/screen/S-root.
 ```
+
 如果想删掉app窗口，可以先执行命令`screen -r app`登录进去，再输入`exit`回车，就退出并且删除app窗口了。
+
 ```shell
 ➜  ~ screen -r app
 [screen is terminating]
@@ -33,6 +33,7 @@ There is a screen on:
 ➜  ~ screen -ls   
 No Sockets found in /var/run/screen/S-root.
 ```
+
 一般程序员日常开发掌握这几个命令已经做够了。
 :::
 
@@ -174,17 +175,17 @@ scrape_configs:
 
 部署服务的方式请参考单体架构的 [kubernetes](#kubernetes) 章节。这里主要是做几点补充说明。
 
-1. 如果采用了k8s来部署服务，可以利用k8s的服务发现和负载均衡机制，将go-doudou服务全部按单体服务部署，然后将dns服务地址配置到环境变量里，服务间接口调用通过dns服务地址，由k8s为我们做实例间负载均衡。如果服务需要暴露到外网，可以配置自行配置ingress
+1. 你可以利用k8s的服务发现和负载均衡机制，将go-doudou服务全部按单体服务部署，然后将dns服务地址配置到环境变量里，服务间接口调用通过dns服务地址，由k8s为我们做实例间负载均衡。如果服务需要暴露到外网，可以配置自行配置ingress
 
-2. 如果采用了k8s来部署服务，可以利用k8s的[`ConfigMaps`](https://kubernetes.io/docs/concepts/configuration/configmap/)机制来做配置管理
+2. 你可以利用k8s的[`ConfigMaps`](https://kubernetes.io/docs/concepts/configuration/configmap/)机制来做配置管理
 
-3. 如果已采用k8s部署，但仍打算采用go-doudou内置的memberlist服务发现机制，就有两种部署方案：无状态服务和有状态服务
+3. 如果你仍打算采用go-doudou内置的memberlist服务发现机制，就有两种部署方案：无状态服务和有状态服务
 
 4. go-doudou微服务架构同时支持无状态服务和有状态服务，可以根据实际业务需求全部部署成某一种类型或者混合两种类型
 
 5. 推荐至少将担当种子节点的服务以有状态服务类型部署。因为有状态服务相比无状态服务，容器名和`hostname`是固定的，可以通过配置`headless`服务，获得一个可以定位到该容器的dns域名。域名构成规则是`container-hostname.service-metadata-name.my-namespace.svc.cluster-domain.example`，例如`seed-2.seed-svc-headless.default.svc.cluster.local`。这样的话，当种子节点容器因各种原因重启以后，连接地址不会发生改变，其他服务的`GDD_MEM_SEED`环境变量不需要重新配置，集群更稳定，维护更方便。需要了解更多，请参考[DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
 
-6. 前文介绍的`go-doudou-prometheus-sd`服务本身就是一个go-doudou服务，可以当做种子节点，以有状态服务类型部署一个或多个实例。这里假设部署了3个服务实例，那么其他服务的`GDD_MEM_SEED`环境变量配置如下
+6. 前文介绍的`go-doudou-prometheus-sd`服务本身就是一个go-doudou服务，可以当做种子节点，以有状态服务类型部署一个或多个实例。这里假设部署了3个种子实例，那么所有服务实例（包括种子实例本身）的`GDD_MEM_SEED`环境变量配置如下
 ```shell
 GDD_MEM_SEED=prometheus-0.prometheus-svc.default.svc.cluster.local,prometheus-1.prometheus-svc.default.svc.cluster.local,prometheus-2.prometheus-svc.default.svc.cluster.local
 ```
