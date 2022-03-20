@@ -2,7 +2,7 @@
 
 ## Service Register and Discovery
 Go-doudou has two options: `memberlist` and `nacos`. 
-- `memberlist`: based on [SWIM gossip protocol](https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf), decentralized, peer to peer architecture, no leader node, forking from [hashicorp/memberlist](https://github.com/hashicorp/memberlist) and make some changes
+- `memberlist`: based on [SWIM gossip protocol](https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf), decentralized, peer to peer architecture, no leader election, forking from [hashicorp/memberlist](https://github.com/hashicorp/memberlist) and make some changes
 - [`nacos`](https://github.com/alibaba/nacos): centralized, leader-follower architecture, developed by alibaba
 
 ::: tip
@@ -96,8 +96,8 @@ func main() {
 
 ### Smooth Weighted Round-robin Balancing (memberlist only)
 
-If environment variable `GDD_MEM_WEIGHT` is not set, local node weight will be calculated by health score and cpu idle
-percent every `GDD_MEM_WEIGHT_INTERVAL` and gossip to remote nodes. By default, `GDD_MEM_WEIGHT_INTERVAL` is `0s`, this feature is disabled.
+If both environment variable `GDD_WEIGHT` and `GDD_MEM_WEIGHT` is not set, local node weight will be 1 by default. If weight is set to 0, environment variable `GDD_MEM_WEIGHT_INTERVAL` is set > `0s`, weight will be calculated by health score and cpu idle
+percent every `GDD_MEM_WEIGHT_INTERVAL` and gossip to remote nodes automatically.
 
 ```go
 func main() {
@@ -178,7 +178,7 @@ func main() {
 ## Rate Limit
 ### Usage
 There is a built-in [golang.org/x/time/rate](https://pkg.go.dev/golang.org/x/time/rate) based token-bucket rate limiter implementation
-in `github.com/unionj-cloud/go-doudou/ratelimit/memrate` package with a `MemoryStore` struct for storing key and `Limiter` instance pairs.
+in `github.com/unionj-cloud/go-doudou/framework/ratelimit/memrate` package with a `MemoryStore` struct for storing key and `Limiter` instance pairs.
 
 If you don't like the built-in rate limiter implementation, you can implement `Limiter` interface by yourself.
 
@@ -188,7 +188,49 @@ You can pass an option function `memrate.WithTimer` to `memrate.NewLimiter` func
 There is also a built-in [go-redis/redis_rate](https://github.com/go-redis/redis_rate) based redis GCRA rate limiter implementation.
 
 ### Memory based rate limiter Example
+
 Memory based rate limiter is stored in memory, only for single process.  
+
+```go
+func main() {
+	...
+
+	handler := httpsrv.NewUsersvcHandler(svc)
+	srv := ddhttp.NewDefaultHttpSrv()
+
+	store := memrate.NewMemoryStore(func(_ context.Context, store *memrate.MemoryStore, key string) ratelimit.Limiter {
+		return memrate.NewLimiter(10, 30, memrate.WithTimer(10*time.Second, func() {
+			store.DeleteKey(key)
+		}))
+	})
+
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
+}
+```
+
+**Note:** you need write your own http middleware to fit your needs. Here is an example below.
+
+```go
+// RateLimit limits rate based on memrate.MemoryStore
+func RateLimit(store *memrate.MemoryStore) func(inner http.Handler) http.Handler {
+	return func(inner http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			key := r.RemoteAddr[:strings.LastIndex(r.RemoteAddr, ":")]
+			limiter := store.GetLimiter(key)
+			if !limiter.Allow() {
+				http.Error(w, "too many requests", http.StatusTooManyRequests)
+				return
+			}
+			inner.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+### Redis based rate limiter Example
+
+Redis based rate limiter is stored in redis, so it can be used for multiple processes to limit one key across cluster.
 
 ```go
 func main() {
@@ -213,7 +255,9 @@ func main() {
 	srv.Run()
 }
 ```
-Note: you need write your own http middleware to fit your needs. Here is an example below.
+
+**Note:** you need write your own http middleware to fit your needs. Here is an example below.
+
 ```go
 // RedisRateLimit limits rate based on redisrate.GcraLimiter
 func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http.Handler) http.Handler {
@@ -233,7 +277,7 @@ func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http
 
 ## Bulkhead
 ### Usage
-There is built-in [github.com/slok/goresilience](github.com/slok/goresilience) based bulkhead pattern support by BulkHead middleware in `github.com/unionj-cloud/go-doudou/svc/http` package.
+There is built-in [github.com/slok/goresilience](github.com/slok/goresilience) based bulkhead pattern support by BulkHead middleware in `github.com/unionj-cloud/go-doudou/framework/http` package.
 
 ```go
 http.BulkHead(3, 10*time.Millisecond)
@@ -273,9 +317,9 @@ func main() {
 There is built-in [github.com/slok/goresilience](github.com/slok/goresilience) based Circuit Breaker / Timeout / Retry support in generated client code.
 You don't need to do anything other than running below command: 
 ```shell
-go-doudou svc http --handler -c go --doc
+go-doudou svc http --handler -c --doc
 ```  
-The flag  `-c go` means generate go client code.
+The flag  `-c` means generate go client code.
 Then you will get three files in client folder: 
 ```shell
 ├── client.go
@@ -346,6 +390,56 @@ logger.Init(logger.WithWritter(io.MultiWriter(os.Stdout, &lumberjack.Logger{
 ### ELK stack
 `logger` package provided well support for ELK stack. To see example, please go to [go-doudou-guide](https://github.com/unionj-cloud/go-doudou-guide).
 
+#### Example
+
+```yaml
+version: '3.9'
+
+services:
+
+ elasticsearch:
+   container_name: elasticsearch
+   image: "docker.elastic.co/elasticsearch/elasticsearch:7.2.0"
+   environment:
+     - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+     - "discovery.type=single-node"
+   ports:
+     - "9200:9200"
+   volumes:
+     - ./esdata:/usr/share/elasticsearch/data
+   networks:
+     testing_net:
+       ipv4_address: 172.28.1.9
+
+ kibana:
+   container_name: kibana
+   image: "docker.elastic.co/kibana/kibana:7.2.0"
+   ports:
+     - "5601:5601"
+   networks:
+     testing_net:
+       ipv4_address: 172.28.1.10
+
+ filebeat:
+   container_name: filebeat
+   image: "docker.elastic.co/beats/filebeat:7.2.0"
+   volumes:
+     - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+     - ./log:/var/log
+   networks:
+     testing_net:
+       ipv4_address: 172.28.1.11
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+```
+
+#### Screenshot
+
 ![elk](/images/elk.png)
 
 ## Jaeger
@@ -393,7 +487,61 @@ func main() {
 
 ## Grafana / Prometheus
 ### Usage
-Please refer to [Prometheus Service Discovery](./deployment.md#prometheus-service-discovery) section.
+
+Please refer to [Prometheus Service Discovery](./deployment.md#prometheus-service-discovery) section and repository [wordcloud](https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/wordcloud).
+
+### Example
+
+```yaml
+version: '3.9'
+
+services:
+  prometheus:
+    container_name: prometheus
+    hostname: prometheus
+    image: wubin1989/go-doudou-prometheus-sd:v1.0.2
+    environment:
+      - GDD_SERVICE_NAME=prometheus
+      - PROM_REFRESH_INTERVAL=15s
+      - GDD_MEM_HOST=localhost
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    ports:
+      - "9090:9090"
+      - "7946:7946"
+      - "7946:7946/udp"
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9090" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.1
+
+  grafana:
+	image: grafana/grafana:latest
+	container_name: grafana
+	volumes:
+		- ./grafana/provisioning:/etc/grafana/provisioning
+	environment:
+		- GF_AUTH_DISABLE_LOGIN_FORM=false
+		- GF_AUTH_ANONYMOUS_ENABLED=false
+		- GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+	ports:
+		- 3000:3000
+	networks:
+		testing_net:
+		ipv4_address: 172.28.1.8
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+```
 
 ### Screenshot
 ![grafana](/images/grafana.png)
