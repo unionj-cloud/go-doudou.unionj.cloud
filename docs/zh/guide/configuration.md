@@ -42,7 +42,7 @@ dotenv格式和yaml格式的本地配置文件的使用方式是完全一样的�
 
 **注意**：前缀必须是`app`
 
-## 远程配置中心
+## 远程配置方案
 
 Go-doudou内建支持两种远程配置中心方案：阿里的Nacos和携程的Apollo。支持在服务启动时加载，也支持自定义监听函数监听配置变化。
 
@@ -133,7 +133,7 @@ func main() {
 }
 ```
 
-需要补充说明的是：首次加载配置的事件也会被自定义监听函数监听到，如果需要跳过第一次，需要"继承"`configmgr`包提供的`BaseApolloListener`结构体，然后在`OnChange`函数里首先加上如下代码
+需要补充说明的是：首次加载配置的事件也会被自定义监听函数监听到，如果需要跳过第一次，需要"继承"`configmgr`包提供的`BaseApolloListener`结构体，然后在`OnChange`函数的开头加上如下代码
 
 ```go
 c.Lock.Lock()
@@ -187,7 +187,7 @@ if !c.SkippedFirstEvent {
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_PROBE_INTERVAL  | 发起实例探活的UDP请求的间隔时间                                                                              | 5s      |          |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_PROBE_TIMEOUT   | 单次实例探活的超时时间                                                                                      | 3s      |          |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_SUSPICION_MULT  | 计算宣告疑似离线实例已离线的超时时间的系数                                                                     | 6       |          |
-| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_RETRANSMIT_MULT  | 计算一条消息最多发送多少次的系数                                                                     | 6       |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_RETRANSMIT_MULT  | 计算一条消息最多发送多少次的系数                                                                     | 4       |          |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_GOSSIP_NODES    | 定时发送UDP消息的单次目标实例数量                                                                            | 4       |          |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_GOSSIP_INTERVAL | 定时发送UDP消息的间隔时间                                                                                  | 500ms   |          |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MEM_INDIRECT_CHECKS | 如果UDP探活失败，帮助该实例做间接探活的其他实例的数量                                                           | 3       |          |

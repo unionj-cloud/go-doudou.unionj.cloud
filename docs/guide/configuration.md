@@ -43,30 +43,31 @@ Configuration Loading Rule:
 
 **Note**：file name must be prefixed with `app`
 
-## 远程配置中心
+## Remote Configuration Solution
 
-Go-doudou内建支持两种远程配置中心方案：阿里的Nacos和携程的Apollo。支持在服务启动时加载，也支持自定义监听函数监听配置变化。
+Go-doudou has built-in support for two remote configuration solution: Nacos from Alibaba and Apollo from Ctrip to load configuration when start and customize listener to react to config change event.
 
-开启远程配置中心，需在本地配置文件中配置以下环境变量：
+To enable remote configuration support, you should configure below environment variable in local configuration file: 
 
-- `GDD_CONFIG_REMOTE_TYPE`: 远程配置中心名称，可选项：`nacos`，`apollo`
+- `GDD_CONFIG_REMOTE_TYPE`: remote configuration center name，options：`nacos`，`apollo`
 
 :::tip
 
-Go-doudou框架层的配置（即以`GDD_`为前缀的配置）中有一部分 [服务配置](#服务配置) 和 [Memberlist配置](#memberlist配置) 支持通过远程配置中心在运行时动态修改，运行时动态修改的配置优先级最高，会将服务启动时从命令行终端、`Dockerfile`文件、k8s配置文件、本地配置文件和远程配置中心加载的配置都覆盖掉。
+There are some go-doudou native configuration (`GDD_` prefixed) in [Service Configuration](#service-configuration) and [Memberlist Configuration](#memberlist-configuration) supporting 
+be configured in runtime by reacting to change event from remote configuration center. Dynamic configuration have highest priority, can override old configuration from any other sources.
 
 :::
-### Nacos配置中心
+### Nacos Configuration Center
 
-Go-doudou服务启动时会自动从Nacos加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+Go-doudou will load configuration from Nacos server when service start out-of-box. You just need to add some configuration in local configuration files.
 
-- `GDD_NACOS_NAMESPACE_ID`: Nacos namespaceId，非必须
-- `GDD_NACOS_SERVER_ADDR`: Nacos服务端连接地址，必须
-- `GDD_NACOS_CONFIG_FORMAT`: 配置的格式，可选项：`dotenv`，`yaml`，默认值是`dotenv`
-- `GDD_NACOS_CONFIG_GROUP`: Nacos group，默认值是`DEFAULT_GROUP`
-- `GDD_NACOS_CONFIG_DATAID`: Nacos dataId，必须，多个dataId用英文逗号隔开，配置里的顺序就是实际加载顺序，遵循先加载的配置优先级最高的规则
+- `GDD_NACOS_NAMESPACE_ID`: Nacos namespaceId, not required
+- `GDD_NACOS_SERVER_ADDR`: Nacos server connection url, required
+- `GDD_NACOS_CONFIG_FORMAT`: configuration data format, options: `dotenv`(default), `yaml`
+- `GDD_NACOS_CONFIG_GROUP`: Nacos group, default is `DEFAULT_GROUP`
+- `GDD_NACOS_CONFIG_DATAID`: Nacos dataId, required, multiple dataId should be separated by comma. Loading order is the same as configuration order, so first loaded value has highest priority.
 
-`configmgr`包里提供了对外导出的与Nacos配置中心交互的单例`NacosClient`，可以调用`AddChangeListener`方法添加自定义的监听函数。用法示例：
+There is exported singleton `NacosClient` from `configmgr` for communicating with Nacos configuration center, you can call `AddChangeListener` method to add custom event listener. For example:
 
 ```go
 func main() {
@@ -88,16 +89,16 @@ func main() {
 }
 ```
 
-### Apollo配置中心
+### Apollo Configuration Center
 
-Go-doudou服务启动时会自动从Apollo加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+Go-doudou will load configuration from Apollo server when service start out-of-box. You just need to add some configuration in local configuration files.
 
-- `GDD_APOLLO_CLUSTER`: Apollo cluster，默认值是`default`
-- `GDD_APOLLO_ADDR`: Apollo服务端连接地址，必须
-- `GDD_APOLLO_NAMESPACE`: Apollo namespace，相当于Nacos的dataId，默认值是`application.properties`，多个namespace用英文逗号隔开，配置里的顺序就是实际加载顺序，遵循先加载的配置优先级最高的规则
-- `GDD_APOLLO_SECRET`: Apollo配置密钥，非必须
+- `GDD_APOLLO_CLUSTER`: Apollo cluster, default is `default`
+- `GDD_APOLLO_ADDR`: Apollo server connection url, required
+- `GDD_APOLLO_NAMESPACE`: Apollo namespace, just like dataId for Nacos, default is `application.properties`, multiple dataId should be separated by comma. Loading order is the same as configuration order, so first loaded value has highest priority.
+- `GDD_APOLLO_SECRET`: Apollo secret, not required
 
-`configmgr`包里提供了对外导出的与Apollo配置中心交互的单例`ApolloClient`，可以调用`AddChangeListener`方法添加自定义的监听函数。用法示例：
+There is exported singleton `ApolloClient` from `configmgr` for communicating with Nacos configuration center, you can call `AddChangeListener` method to add custom event listener. For example:
 
 ```go
 type ConfigChangeListener struct {
@@ -134,7 +135,8 @@ func main() {
 }
 ```
 
-需要补充说明的是：首次加载配置的事件也会被自定义监听函数监听到，如果需要跳过第一次，需要"继承"`configmgr`包提供的`BaseApolloListener`结构体，然后在`OnChange`函数里首先加上如下代码
+Here is additional note: custom event listener will also react to the very first configuration loading event when service start, if you need to skip it, you should "extend" 
+`BaseApolloListener` struct from `configmgr` package, then add below code to the beginning of `OnChange` function
 
 ```go
 c.Lock.Lock()
@@ -146,6 +148,8 @@ if !c.SkippedFirstEvent {
 ```
 
 ## Service Configuration
+
+Red asterisk marked configuration can be dynamically changed in runtime by go-doudou listening to change events from remote configuration center.
 
 | Environment Variable       | Description                                                                                                                                               | Default    | Required                                    |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------- |
@@ -164,13 +168,15 @@ if !c.SkippedFirstEvent {
 | GDD_PORT                   | port for the http server to listen on                                                                                                                     | 6060       |                                             |
 | GDD_RETRY_COUNT            | client retry count                                                                                                                                        | 0          |                                             |
 | GDD_MANAGE_ENABLE          | enable built-in api endpoints such as `/go-doudou/doc`, `/go-doudou/openapi.json`, `/go-doudou/prometheus`, `/go-doudou/registry` and `/go-doudou/config` | true       |                                             |
-| GDD_MANAGE_USER            | http basic username for built-in api endpoints                                                                                                            | admin      |                                             |
-| GDD_MANAGE_PASS            | http basic password for built-in api endpoints                                                                                                            | admin      |                                             |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_USER            | http basic username for built-in api endpoints                                                                                                            | admin      |                                             |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_PASS            | http basic password for built-in api endpoints                                                                                                            | admin      |                                             |
 | GDD_TRACING_METRICS_ROOT   | metrics root for jaeger tracing                                                                                                                           | Go-doudou  |                                             |
 | GDD_WEIGHT                 | service instance weight                                                                                                                                   | 1          |                                             |
 | GDD_SERVICE_DISCOVERY_MODE | service discovery mode, available options: `memberlist` and `nacos`                                                                                       | memberlist |                                             |
 
 ## Memberlist Configuration
+
+Red asterisk marked configuration can be dynamically changed in runtime by go-doudou listening to change events from remote configuration center. These configuration can be used to adjust gossip message convergence speed, in other words, how fast service list cached in each service instance memory become consistent.
 
 | Environment Variable    | Description                                                                                                                                                                                                                                                                                   | Default | Required |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
@@ -178,16 +184,17 @@ if !c.SkippedFirstEvent {
 | GDD_MEM_NAME            | for dev and test purpose only. unique name of this node in cluster. if empty or not set, hostname will be used instead                                                                                                                                                                        |         |          |
 | GDD_MEM_HOST            | specify `AdvertiseAddr` attribute of memberlist config struct. if GDD_MEM_HOST starts with dot such as `.seed-svc-headless.default.svc.cluster.local`, it will be prefixed with `hostname` to be `seed-2.seed-svc-headless.default.svc.cluster.local` for supporting k8s statefulset service. By default, private ip is used |         |          |
 | GDD_MEM_PORT            | TCP and UDP port for memberlist instance to listen on                                                                                                                                                                                                                                         | 7946    |          |
-| GDD_MEM_DEAD_TIMEOUT    | dead node will be removed from node map if not received refute messages from it in GDD_MEM_DEAD_TIMEOUT duration                                                                                                                                                                              | 60s     |          |
-| GDD_MEM_SYNC_INTERVAL   | local node will synchronize states from other random node every GDD_MEM_SYNC_INTERVAL duration                                                                                                                                                                                                | 60s     |          |
-| GDD_MEM_RECLAIM_TIMEOUT | dead node will be replaced with new node with the same name but different full address in GDD_MEM_RECLAIM_TIMEOUT duration                                                                                                                                                                    | 3s      |          |
-| GDD_MEM_PROBE_INTERVAL  | ping remote nodes for failure detection every GDD_MEM_PROBE_INTERVAL duration                                                                                                                                                                                                                 | 5s      |          |
-| GDD_MEM_PROBE_TIMEOUT   | probe fail if not receive ack message in GDD_MEM_PROBE_TIMEOUT duration                                                                                                                                                                                                                       | 3s      |          |
-| GDD_MEM_SUSPICION_MULT  | The multiplier for determining the time an inaccessible node is considered suspect before declaring it dead                                                                                                                                                                                   | 6       |          |
-| GDD_MEM_GOSSIP_NODES    | how many remote nodes you want to send gossip messages                                                                                                                                                                                                                                        | 4       |          |
-| GDD_MEM_GOSSIP_INTERVAL | gossip messages in queue every GDD_MEM_GOSSIP_INTERVAL duration                                                                                                                                                                                                                               | 500ms   |          |
-| GDD_MEM_TCP_TIMEOUT     | TCP request will timeout in GDD_MEM_TCP_TIMEOUT duration                                                                                                                                                                                                                                      | 30s     |          |
-| GDD_MEM_INDIRECT_CHECKS | the number of nodes that will be asked to perform an indirect probe of a node in the case a direct probe fails                                                                                                                                                                                | 3       |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_DEAD_TIMEOUT    | dead node will be removed from node map if not received refute messages from it in GDD_MEM_DEAD_TIMEOUT duration                                                                                                                                                                              | 60s     |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_SYNC_INTERVAL   | local node will synchronize states from other random node every GDD_MEM_SYNC_INTERVAL duration                                                                                                                                                                                                | 60s     |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_RECLAIM_TIMEOUT | dead node will be replaced with new node with the same name but different full address in GDD_MEM_RECLAIM_TIMEOUT duration                                                                                                                                                                    | 3s      |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_PROBE_INTERVAL  | ping remote nodes for failure detection every GDD_MEM_PROBE_INTERVAL duration                                                                                                                                                                                                                 | 5s      |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_PROBE_TIMEOUT   | probe fail if not receive ack message in GDD_MEM_PROBE_TIMEOUT duration                                                                                                                                                                                                                       | 3s      |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_SUSPICION_MULT  | The multiplier for determining the time an inaccessible node is considered suspect before declaring it dead                   | 6       |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_RETRANSMIT_MULT  | The multiplier for the number of retransmissions that are attempted for messages broadcasted over gossip     | 4       |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_GOSSIP_NODES    | how many remote nodes you want to send gossip messages                                                                                                                                                                                                                                        | 4       |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_GOSSIP_INTERVAL | gossip messages in queue every GDD_MEM_GOSSIP_INTERVAL duration                                   | 500ms   |          |
+| <span style="color: red; font-weight: bold;">*</span>GDD_MEM_INDIRECT_CHECKS | the number of nodes that will be asked to perform an indirect probe of a node in the case a direct probe fails                           | 3       |          |
+| GDD_MEM_TCP_TIMEOUT     | TCP request will timeout in GDD_MEM_TCP_TIMEOUT duration        | 30s     |          |
 | GDD_MEM_WEIGHT          | `Deprecated` node weight for smooth weighted round-robin balancing                                                                                                                                                                                                                            | 0       |          |
 | GDD_MEM_WEIGHT_INTERVAL | node weight will be calculated every GDD_MEM_WEIGHT_INTERVAL                                                                                                                                                                                                                                  | 0s      |          |
 | GDD_MEM_LOG_DISABLE     | whether disable memberlist logging                                                                                                                                                                                                                                                            | false   |          |
