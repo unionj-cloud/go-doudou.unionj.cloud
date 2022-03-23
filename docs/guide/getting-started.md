@@ -9,16 +9,16 @@
 ## Install
 - If go version < 1.17,
 ```shell
-go get -v github.com/unionj-cloud/go-doudou@v1.0.2
+go get -v github.com/unionj-cloud/go-doudou@v1.0.3
 ```
 
 - If go version >= 1.17, recommend to use below command to install go-doudou cli globally
 ```shell
-go install -v github.com/unionj-cloud/go-doudou@v1.0.2
+go install -v github.com/unionj-cloud/go-doudou@v1.0.3
 ```
 and use below command to download go-doudou as dependency for your module.
 ```shell
-go get -v -d github.com/unionj-cloud/go-doudou@v1.0.2
+go get -v -d github.com/unionj-cloud/go-doudou@v1.0.3
 ```
 
 ::: tip
@@ -34,10 +34,10 @@ You can run `go-doudou version` to upgrade cli.
 ```shell
 ➜  ~ go-doudou version                       
 Installed version is v0.9.8
-Latest release version is v1.0.2
+Latest release version is v1.0.3
 ✔ Yes
-go install -v github.com/unionj-cloud/go-doudou@v1.0.2
-go: downloading github.com/unionj-cloud/go-doudou v1.0.2
+go install -v github.com/unionj-cloud/go-doudou@v1.0.3
+go: downloading github.com/unionj-cloud/go-doudou v1.0.3
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/columnenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/sortenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/nullenum
@@ -69,7 +69,7 @@ github.com/unionj-cloud/go-doudou/cmd
 github.com/unionj-cloud/go-doudou
 DONE
 ➜  ~ go-doudou version
-Installed version is v1.0.2
+Installed version is v1.0.3
 ➜  ~ 
 ```  
 

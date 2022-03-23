@@ -1,8 +1,149 @@
 # Configuration
 
-You can use environment variables to configure go-doudou framework. Go-doudou uses [godotenv](https://github.com/joho/godotenv) library to give you out-of-box support for loading environment variable values from dotenv files.
+Go-doudou supports dotenv and yaml format local configuration file, and Alibaba Nacos configuration center and Ctrip Apollo configuration center out-of-box.
+Go-doudou loads configuration from these sources to environment variables.
 
-If you have multiple `.env` files like `.env.test`, `.env.prod` etc., you can set `GDD_ENV` to `test` or `prod` to load corresponding dotenv file.
+Comparing with remote configuration center local configuration files have higher priority, so value of each environment variable loaded from local files won't be overridden by configuration from remote center.
+
+## Local Configuration File
+
+The usage of dotenv and yaml files are the same, only naming rules are different. They will be explained separately below.
+
+:::tip
+
+Files with different format can be used together, or you can use only one kind of format. If used together, yaml files have higher priority. After all yaml files loaded, dotenv files loads.
+
+:::
+
+### Dotenv File
+
+If you have multiple `.env` files, such as `.env.test`, `.env.prod` to configure different environment, you can set `GDD_ENV` environment variable to `test` or `prod` by terminal, `Dockerfile` or k8s file to load corresponding file.
+
+Configuration Loading Rule:
+  1. For one environment variable, no matter where be configured, first value has highest priority, won't be overridden by later values 
+  2. Using `prod` as example, loading order is:  
+    1. Load `.env.prod.local`  
+    2. If `GDD_ENV` != `test`, load `.env.local`  
+    3. Load `.env.prod`  
+    4. Load `.env`    
+
+**Note**：file name must be prefixed with `.env`
+
+### Yaml File
+
+Support both `.yml` suffixed and `.yaml` suffixed files. If you have multiple yaml files, such as `app-test.yml`, `app-prod.yml` to configure different environment, you can set `GDD_ENV` environment variable to `test` or `prod` by terminal, `Dockerfile` or k8s file to load corresponding file.
+
+Configuration Loading Rule:
+  1. For one environment variable, no matter where be configured, first value has highest priority, won't be overridden by later values 
+  2. Using `prod` as example, loading order is:  
+    1. Load `app-prod-local.yml`  
+    2. If `GDD_ENV` != `test`, load `app-local.yml`  
+    3. Load `app-prod.yml`  
+    4. Load `app.yml`    
+
+**Note**：file name must be prefixed with `app`
+
+## 远程配置中心
+
+Go-doudou内建支持两种远程配置中心方案：阿里的Nacos和携程的Apollo。支持在服务启动时加载，也支持自定义监听函数监听配置变化。
+
+开启远程配置中心，需在本地配置文件中配置以下环境变量：
+
+- `GDD_CONFIG_REMOTE_TYPE`: 远程配置中心名称，可选项：`nacos`，`apollo`
+
+:::tip
+
+Go-doudou框架层的配置（即以`GDD_`为前缀的配置）中有一部分 [服务配置](#服务配置) 和 [Memberlist配置](#memberlist配置) 支持通过远程配置中心在运行时动态修改，运行时动态修改的配置优先级最高，会将服务启动时从命令行终端、`Dockerfile`文件、k8s配置文件、本地配置文件和远程配置中心加载的配置都覆盖掉。
+
+:::
+### Nacos配置中心
+
+Go-doudou服务启动时会自动从Nacos加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+
+- `GDD_NACOS_NAMESPACE_ID`: Nacos namespaceId，非必须
+- `GDD_NACOS_SERVER_ADDR`: Nacos服务端连接地址，必须
+- `GDD_NACOS_CONFIG_FORMAT`: 配置的格式，可选项：`dotenv`，`yaml`，默认值是`dotenv`
+- `GDD_NACOS_CONFIG_GROUP`: Nacos group，默认值是`DEFAULT_GROUP`
+- `GDD_NACOS_CONFIG_DATAID`: Nacos dataId，必须，多个dataId用英文逗号隔开，配置里的顺序就是实际加载顺序，遵循先加载的配置优先级最高的规则
+
+`configmgr`包里提供了对外导出的与Nacos配置中心交互的单例`NacosClient`，可以调用`AddChangeListener`方法添加自定义的监听函数。用法示例：
+
+```go
+func main() {
+
+	...
+
+	if configmgr.NacosClient != nil {
+		configmgr.NacosClient.AddChangeListener(configmgr.NacosConfigListenerParam{
+			DataId: "statsvc-dev",
+			OnChange: func(event *configmgr.NacosChangeEvent) {
+				fmt.Println("group:" + event.Group + ", dataId:" + event.DataId + fmt.Sprintf(", changes: %+v\n", event.Changes))
+			},
+		})
+	}
+
+	...
+
+	srv.Run()
+}
+```
+
+### Apollo配置中心
+
+Go-doudou服务启动时会自动从Apollo加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+
+- `GDD_APOLLO_CLUSTER`: Apollo cluster，默认值是`default`
+- `GDD_APOLLO_ADDR`: Apollo服务端连接地址，必须
+- `GDD_APOLLO_NAMESPACE`: Apollo namespace，相当于Nacos的dataId，默认值是`application.properties`，多个namespace用英文逗号隔开，配置里的顺序就是实际加载顺序，遵循先加载的配置优先级最高的规则
+- `GDD_APOLLO_SECRET`: Apollo配置密钥，非必须
+
+`configmgr`包里提供了对外导出的与Apollo配置中心交互的单例`ApolloClient`，可以调用`AddChangeListener`方法添加自定义的监听函数。用法示例：
+
+```go
+type ConfigChangeListener struct {
+	configmgr.BaseApolloListener
+}
+
+func (c *ConfigChangeListener) OnChange(event *storage.ChangeEvent) {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+	if !c.SkippedFirstEvent {
+		c.SkippedFirstEvent = true
+		return
+	}
+	logger.Info("from OnChange")
+	fmt.Println(event.Changes)
+	for key, value := range event.Changes {
+		fmt.Println("change key : ", key, ", value :", value)
+	}
+	fmt.Println(event.Namespace)
+	logger.Info("from OnChange end")
+}
+
+func main() {
+
+    ...
+
+	var listener ConfigChangeListener
+
+	configmgr.ApolloClient.AddChangeListener(&listener)
+
+    ...
+
+	srv.Run()
+}
+```
+
+需要补充说明的是：首次加载配置的事件也会被自定义监听函数监听到，如果需要跳过第一次，需要"继承"`configmgr`包提供的`BaseApolloListener`结构体，然后在`OnChange`函数里首先加上如下代码
+
+```go
+c.Lock.Lock()
+defer c.Lock.Unlock()
+if !c.SkippedFirstEvent {
+  c.SkippedFirstEvent = true
+  return
+}
+```
 
 ## Service Configuration
 

@@ -39,7 +39,8 @@ GDD_SERVICE_DISCOVERY_MODE=memberlist # Optional
 ```
 
 ### Nacos
-From v1.0.2, go-doudou adds `nacos` as another option for service discovery.
+
+Go-doudou also has built-in support for Nacos developed by Alibaba as another option for service discovery.
 
 First, add below code to `main` function.
 

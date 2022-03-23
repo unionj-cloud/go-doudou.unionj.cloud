@@ -6,7 +6,7 @@ Go-doudou内置了基于命令行终端的代码生成器。`go-doudou`是根命
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou -v     
-go-doudou version v1.0.2
+go-doudou version v1.0.3
 ```
 
 - `-h` 打印帮助信息。下文介绍的所有的子命令都有这个参数，就不再介绍了。
@@ -47,7 +47,7 @@ Go-doudou还提供了若干子命令来加速整个开发流程。我们挨个�
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou version
 Installed version is v0.9.8
-Latest release version is v1.0.2
+Latest release version is v1.0.3
 Use the arrow keys to navigate: ↓ ↑ → ← 
 ? Do you want to upgrade?: 
   ▸ Yes
@@ -241,7 +241,7 @@ Flags:
 - 安装go-doudou
 
 ```shell
-go get -v github.com/unionj-cloud/go-doudou@v1.0.2
+go get -v github.com/unionj-cloud/go-doudou@v1.0.3
 ```
 
 - 克隆示例代码，切到`ddldemo`路径

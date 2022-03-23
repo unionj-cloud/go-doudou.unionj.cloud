@@ -42,7 +42,7 @@ GDD_SERVICE_DISCOVERY_MODE=memberlist # Optional
 
 ### Nacos
 
-从v1.0.2版本起，go-doudou加入了对`nacos`作为服务发现机制的支持。
+Go-doudou内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。
 
 首先，给`main`函数加入如下代码
 
