@@ -25,3 +25,6 @@ sidebar: auto
     - usersvc: toy application
     - wordcloud: real-world application with frontend, microservice architecture
     - nacos: demo project for demonstrating how to use Nacos for service discovery in go-doudou RESTful service application
+    - nacosconfig: demo project for demonstrating how to use Nacos for configuration management in go-doudou RESTful service application
+    - apolloconfig: demo project for demonstrating how to use Apollo for configuration management in go-doudou RESTful service application
+    - ddldemo: demo project for demonstrating how to use go-doudou built-in ddl tool
