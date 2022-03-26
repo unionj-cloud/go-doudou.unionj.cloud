@@ -171,8 +171,9 @@ Red asterisk marked configuration can be dynamically changed in runtime by go-do
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_USER            | http basic username for built-in api endpoints                                                                                                            | admin      |                                             |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_PASS            | http basic password for built-in api endpoints                                                                                                            | admin      |                                             |
 | GDD_TRACING_METRICS_ROOT   | metrics root for jaeger tracing                                                                                                                           | Go-doudou  |                                             |
-| GDD_WEIGHT                 | service instance weight                                                                                                                                   | 1          |                                             |
-| GDD_SERVICE_DISCOVERY_MODE | service discovery mode, available options: `memberlist` and `nacos`                                                                                       | memberlist |                                             |
+| GDD_WEIGHT                 | service instance weight                                        | 1          |                                             |
+| GDD_SERVICE_DISCOVERY_MODE | service discovery mode, available options: `memberlist` and `nacos`      | memberlist |              |
+| GDD_ENABLE_RESPONSE_GZIP | enable http response gzip compression      | true |              |
 
 ## Memberlist Configuration
 
@@ -212,3 +213,19 @@ Red asterisk marked configuration can be dynamically changed in runtime by go-do
 | GDD_NACOS_LOG_LEVEL               | the level of log, it's must be `debug`,`info`,`warn`,`error`                                      | info             |          |
 | GDD_NACOS_SERVER_ADDR             | nacos server connection url, multiple urls are joined by comma                                    |                  |          |
 | GDD_NACOS_REGISTER_HOST           | service instance host to be registered to nacos server, if not set, private ip is used by default |                  |          |
+| GDD_NACOS_CONFIG_FORMAT           | configuration data format, options: `dotenv`, `yaml` |      dotenv            |          |
+| GDD_NACOS_CONFIG_GROUP           | configuration group |        DEFAULT_GROUP          |          |
+| GDD_NACOS_CONFIG_DATAID           | configuration dataId |                  |    Yes      |
+
+## Apollo Configuration
+
+| Environment Variable              | Description                                                                                       | Default          | Required |
+| --------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------- | -------- |
+| GDD_APOLLO_CLUSTER            | apollo cluster                                                                       | default           |          |
+| GDD_APOLLO_ADDR              | apollo config service address                                              |             |      Yes    |
+| GDD_APOLLO_NAMESPACE | apollo namespace                               | application.properties            |          |
+| GDD_APOLLO_BACKUP_ENABLE                 | enable local disk cache of configuration                                      | true   |          |
+| GDD_APOLLO_BACKUP_PATH               | the directory for local disk cache of configuration                             |             |          |
+| GDD_APOLLO_MUSTSTART               |  if failed to connect to apollo config service, return error immediately            | false             |          |
+| GDD_APOLLO_SECRET             | apollo configuration secret                                    |                  |          |
+| GDD_APOLLO_LOG_ENABLE           | enable print apollo log |     false             |          |

@@ -170,6 +170,7 @@ if !c.SkippedFirstEvent {
 | GDD_TRACING_METRICS_ROOT   | jaeger调用链监控的`metrics root`                                                                     | Go-doudou  |        |
 | GDD_WEIGHT                 | 服务实例的权重                                                                                       | 1          |        |
 | GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`memberlist`, `nacos`                                                           | memberlist |        |
+| GDD_ENABLE_RESPONSE_GZIP | 开启http响应体gzip压缩     | true |              |
 
 ## Memberlist配置
 
@@ -199,7 +200,7 @@ if !c.SkippedFirstEvent {
 
 ## Nacos配置
 
-| 环境变量名       | 描述                                                                                                       | 默认值    | 是否必须                                    |
+| 环境变量名       | 描述                                        | 默认值    | 是否必须                                    |
 | -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
 | GDD_NACOS_NAMESPACE_ID            | 命名空间                                                                                 | public                 |          |
 | GDD_NACOS_TIMEOUT_MS              | 请求超时时间，单位毫秒                                                                      | 10000            |          |
@@ -209,3 +210,19 @@ if !c.SkippedFirstEvent {
 | GDD_NACOS_LOG_LEVEL               | 日志等级，可选项：`debug`,`info`,`warn`,`error`                                      | info             |          |
 | GDD_NACOS_SERVER_ADDR             | Nacos服务器连接地址，多个地址用英文逗号分隔                                         |                  |          |
 | GDD_NACOS_REGISTER_HOST           | 服务实例的注册地址，默认值取主机的私有IP |                  |          |
+| GDD_NACOS_CONFIG_FORMAT           | 配置的数据格式，支持：`dotenv`, `yaml` |      dotenv            |          |
+| GDD_NACOS_CONFIG_GROUP           | 配置group |        DEFAULT_GROUP          |          |
+| GDD_NACOS_CONFIG_DATAID           | 配置dataId |                  |    必须      |
+
+## Apollo配置
+
+| 环境变量名                          | 描述                                                                             | 默认值          | 是否必须         |
+| --------------------------------- | -------------------------------------------------------------------------------- | ---------------- | -------- |
+| GDD_APOLLO_CLUSTER            | apollo集群                                                                       | default           |          |
+| GDD_APOLLO_ADDR              | apollo配置服务连接地址                                             |             |      必须    |
+| GDD_APOLLO_NAMESPACE | apollo命名空间                               | application.properties            |          |
+| GDD_APOLLO_BACKUP_ENABLE                 | 开启在本地磁盘缓存配置                                     | true   |          |
+| GDD_APOLLO_BACKUP_PATH               | 配置缓存文件夹路径                            |             |          |
+| GDD_APOLLO_MUSTSTART               |  如果配置服务连接失败，立刻返回错误            | false             |          |
+| GDD_APOLLO_SECRET             | apollo配置的密钥                                    |                  |          |
+| GDD_APOLLO_LOG_ENABLE           | 开启apollo日志打印 |     false             |          |
