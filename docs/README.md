@@ -24,4 +24,3 @@ features:
     details: Supporting both monolith and microservice architectures gives you flexibility to design your system.
 footer: MIT Licensed | Copyright © 2022-present go-doudou contributors
 ---
-
