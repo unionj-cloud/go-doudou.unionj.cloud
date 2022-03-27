@@ -2,9 +2,9 @@
 
 ## Prerequisites
 
-- go 1.13, 1.14, 1.15 with GO111MODULE=on
+- go 1.15 with GO111MODULE=on
 - go 1.16+
-- < go 1.13: not test, maybe support  
+- < go 1.15: not support from v1.0.3
 
 ## Install
 - If go version < 1.17,
