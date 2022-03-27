@@ -16,7 +16,22 @@ export default defineUserConfig<DefaultThemeOptions>({
       sizes: '32x32',
       href: `/favicon.ico`,
     },
-  ]],
+  ],
+  [
+    "script",
+    {},
+    `
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?74c7a15b874743051fd1a1d679c5a79f";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();`
+  ],
+  ['script', { type: 'text/javascript', src: 'https://v1.cnzz.com/z_stat.php?id=1281026244&web_id=1281026244' }],
+  ['meta', { name: 'keywords', content: 'go-doudou,Go语言微服务框架,golang,go-doudou微服务框架,RESTful,微服务,服务注册与发现,负载均衡,熔断限流,grpc,去中心化,golang microservice framework,golang orm,ORM工具,microservice,service discovery,load balancing,circuit breaker,rate limit,低代码平台' }]
+],
 
   locales: {
     "/": {

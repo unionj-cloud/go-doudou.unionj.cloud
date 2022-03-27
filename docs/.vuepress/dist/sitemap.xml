@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://go-doudou.github.io/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/resources/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/contribution/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/getting-started.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/idl.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/cli.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/generation.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/rest.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/configuration.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/deployment.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/guide/migration.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/resources/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/contribution/</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/getting-started.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/idl.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/cli.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/generation.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/rest.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/configuration.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://go-doudou.github.io/zh/guide/deployment.html</loc>
+  <lastmod>2022-03-23T04:44:11+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+
+
+</urlset>
