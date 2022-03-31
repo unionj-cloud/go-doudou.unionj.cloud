@@ -21,6 +21,97 @@ Go-doudou没有重新造轮子，直接采用Go语言接口类型来做为接口
 	- 不支持请求头和响应头，全局参数以及权限校验。你可以把这些内容作为Go语言注释，写在接口声明的上方或者接口方法签名的上方，这些注释会作为`description`的值生成到接口文档里，然后显示在在线接口文档页面的相应位置。
 	- 不支持[Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). 你可能并不会用到这些API，但我需要在这里提一下。
 
+## 特殊类型
+
+### 枚举
+
+go-doudou 从v1.0.5起新增对枚举的支持。
+
+#### 定义方法
+
+1. 在`vo`包里定义一个基础类型的别名类型作为枚举类型，并且实现`github.com/unionj-cloud/go-doudou/toolkit/openapi/v3`包里的`IEnum`接口
+
+```go
+type IEnum interface {
+	StringSetter(value string)
+	StringGetter() string
+	UnmarshalJSON(bytes []byte) error
+	MarshalJSON() ([]byte, error)
+}
+```
+
+2. 定义若干该枚举类型的常量
+
+#### 示例代码
+
+完整的demo代码，请移步 [go-doudou-tutorials/enumdemo](https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/enumdemo)
+
+```go
+package vo
+
+import "encoding/json"
+
+//go:generate go-doudou name --file $GOFILE -o
+
+type KeyboardLayout int
+
+const (
+	UNKNOWN KeyboardLayout = iota
+	QWERTZ
+	AZERTY
+	QWERTY
+)
+
+func (k *KeyboardLayout) StringSetter(value string) {
+	switch value {
+	case "UNKNOWN":
+		*k = UNKNOWN
+	case "QWERTY":
+		*k = QWERTY
+	case "QWERTZ":
+		*k = QWERTZ
+	case "AZERTY":
+		*k = AZERTY
+	default:
+		*k = UNKNOWN
+	}
+}
+
+func (k *KeyboardLayout) StringGetter() string {
+	switch *k {
+	case UNKNOWN:
+		return "UNKNOWN"
+	case QWERTY:
+		return "QWERTY"
+	case QWERTZ:
+		return "QWERTZ"
+	case AZERTY:
+		return "AZERTY"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func (k *KeyboardLayout) UnmarshalJSON(bytes []byte) error {
+	var _k string
+	err := json.Unmarshal(bytes, &_k)
+	if err != nil {
+		return err
+	}
+	k.StringSetter(_k)
+	return nil
+}
+
+func (k KeyboardLayout) MarshalJSON() ([]byte, error) {
+	return json.Marshal(k.StringGetter())
+}
+
+type Keyboard struct {
+	Layout  KeyboardLayout `json:"layout,omitempty"`
+	Backlit bool            `json:"backlit,omitempty"`
+}
+```
+
 ## 示例代码
 ```go
 package service

@@ -24,6 +24,97 @@ If you don't specify, default is `POST`.
 as golang comments immediately above service interface or corresponding methods in `svc.go` file, and these comments will be set to each `description` attribute in generated OpenAPI 3.0 json file and also be displayed in online api documentation.
 	- Not support [Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). You may not need them, but I should mention here.
 
+## Special Types
+
+### Enum
+
+go-doudou supports enum type since v1.0.5
+
+#### How
+
+1. Define an alias type of any golang basic type as enum type, and implement `IEnum` interface from `github.com/unionj-cloud/go-doudou/toolkit/openapi/v3` package
+
+```go
+type IEnum interface {
+	StringSetter(value string)
+	StringGetter() string
+	UnmarshalJSON(bytes []byte) error
+	MarshalJSON() ([]byte, error)
+}
+```
+
+2. Define several const variables of this enum type
+
+#### Demo
+
+Please visit [go-doudou-tutorials/enumdemo](https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/enumdemo) to see full demo source code.
+
+```go
+package vo
+
+import "encoding/json"
+
+//go:generate go-doudou name --file $GOFILE -o
+
+type KeyboardLayout int
+
+const (
+	UNKNOWN KeyboardLayout = iota
+	QWERTZ
+	AZERTY
+	QWERTY
+)
+
+func (k *KeyboardLayout) StringSetter(value string) {
+	switch value {
+	case "UNKNOWN":
+		*k = UNKNOWN
+	case "QWERTY":
+		*k = QWERTY
+	case "QWERTZ":
+		*k = QWERTZ
+	case "AZERTY":
+		*k = AZERTY
+	default:
+		*k = UNKNOWN
+	}
+}
+
+func (k *KeyboardLayout) StringGetter() string {
+	switch *k {
+	case UNKNOWN:
+		return "UNKNOWN"
+	case QWERTY:
+		return "QWERTY"
+	case QWERTZ:
+		return "QWERTZ"
+	case AZERTY:
+		return "AZERTY"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func (k *KeyboardLayout) UnmarshalJSON(bytes []byte) error {
+	var _k string
+	err := json.Unmarshal(bytes, &_k)
+	if err != nil {
+		return err
+	}
+	k.StringSetter(_k)
+	return nil
+}
+
+func (k KeyboardLayout) MarshalJSON() ([]byte, error) {
+	return json.Marshal(k.StringGetter())
+}
+
+type Keyboard struct {
+	Layout  KeyboardLayout `json:"layout,omitempty"`
+	Backlit bool            `json:"backlit,omitempty"`
+}
+```
+
 ## Example
 ```go
 package service
