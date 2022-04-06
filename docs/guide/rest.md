@@ -26,12 +26,15 @@ defer registry.Shutdown()
 ```  
 
 Second, configure some environment variables.
+
+- `GDD_SERVICE_NAME`: service name, required
 - `GDD_MEM_SEED`: seed address for joining cluster, multiple addresses are separated by comma
 - `GDD_MEM_PORT`: by default, memberlist advertising port is `7946`
 - `GDD_MEM_HOST`: by default, private IP is used 
 - `GDD_SERVICE_DISCOVERY_MODE`: You don't have to configure it, as `memberlist` is the default value
 
 ```shell
+GDD_SERVICE_NAME=test-svc # Required
 GDD_MEM_SEED=localhost:7946  # Required
 GDD_MEM_PORT=56199 # Optional
 GDD_MEM_HOST=localhost # Optional
@@ -55,10 +58,13 @@ defer registry.Shutdown()
 Yes, no difference from using `memberlist`.
 
 Second, configure some environment variables.
+
+- `GDD_SERVICE_NAME`: service name, required
 - `GDD_NACOS_SERVER_ADDR`: your Nacos server address
 - `GDD_SERVICE_DISCOVERY_MODE`: service discovery mode
 
 ```shell
+GDD_SERVICE_NAME=test-svc # Required
 GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos # Required
 GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 ```

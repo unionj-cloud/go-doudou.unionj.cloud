@@ -91,6 +91,7 @@ func main() {
 
 Go-doudou服务启动时会自动从Apollo加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
 
+- `GDD_SERVICE_NAME`: 服务名称就是Apollo AppId
 - `GDD_APOLLO_CLUSTER`: Apollo cluster，默认值是`default`
 - `GDD_APOLLO_ADDR`: Apollo服务端连接地址，必须
 - `GDD_APOLLO_NAMESPACE`: Apollo namespace，相当于Nacos的dataId，默认值是`application.properties`，多个namespace用英文逗号隔开，配置里的顺序就是实际加载顺序，遵循先加载的配置优先级最高的规则

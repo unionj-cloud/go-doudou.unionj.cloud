@@ -28,12 +28,14 @@ defer registry.Shutdown()
 
 其次，配置如下环境变量
 
+- `GDD_SERVICE_NAME`: 服务名称，必须
 - `GDD_MEM_SEED`: 种子节点连接地址，多个地址用英文逗号隔开
 - `GDD_MEM_PORT`: 监听端口，默认监听`7946`端口
 - `GDD_MEM_HOST`: 对外发布的连接地址，默认是私有IP
 - `GDD_SERVICE_DISCOVERY_MODE`: 可以不用配置，默认值就是`memberlist`
 
 ```shell
+GDD_SERVICE_NAME=test-svc # Required
 GDD_MEM_SEED=localhost:7946  # Required
 GDD_MEM_PORT=56199 # Optional
 GDD_MEM_HOST=localhost # Optional
@@ -57,10 +59,13 @@ defer registry.Shutdown()
 没错，跟`memberlist`机制所需添加的代码完全相同。
 
 其次，配置如下环境变量
+
+- `GDD_SERVICE_NAME`: 服务名称，必须
 - `GDD_NACOS_SERVER_ADDR`: Nacos服务端地址
 - `GDD_SERVICE_DISCOVERY_MODE`: 服务发现机制名称
 
 ```shell
+GDD_SERVICE_NAME=test-svc # Required
 GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos # Required
 GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 ```

@@ -93,6 +93,7 @@ func main() {
 
 Go-doudou will load configuration from Apollo server when service start out-of-box. You just need to add some configuration in local configuration files.
 
+- `GDD_SERVICE_NAME`: Apollo AppId
 - `GDD_APOLLO_CLUSTER`: Apollo cluster, default is `default`
 - `GDD_APOLLO_ADDR`: Apollo server connection url, required
 - `GDD_APOLLO_NAMESPACE`: Apollo namespace, just like dataId for Nacos, default is `application.properties`, multiple dataId should be separated by comma. Loading order is the same as configuration order, so first loaded value has highest priority.
