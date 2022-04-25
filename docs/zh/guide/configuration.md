@@ -172,6 +172,7 @@ if !c.SkippedFirstEvent {
 | GDD_WEIGHT                 | 服务实例的权重                                                                                       | 1          |        |
 | GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`memberlist`, `nacos`                                                           | memberlist |        |
 | GDD_ENABLE_RESPONSE_GZIP | 开启http响应体gzip压缩     | true |              |
+| GDD_SQL_LOG_ENABLE | 开启sql日志打印      | false |              |
 
 ## Memberlist配置
 

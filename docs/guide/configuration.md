@@ -175,6 +175,7 @@ Red asterisk marked configuration can be dynamically changed in runtime by go-do
 | GDD_WEIGHT                 | service instance weight                                        | 1          |                                             |
 | GDD_SERVICE_DISCOVERY_MODE | service discovery mode, available options: `memberlist` and `nacos`      | memberlist |              |
 | GDD_ENABLE_RESPONSE_GZIP | enable http response gzip compression      | true |              |
+| GDD_SQL_LOG_ENABLE | enable sql logging      | false |              |
 
 ## Memberlist Configuration
 
