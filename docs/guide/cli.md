@@ -479,23 +479,35 @@ Unsigned
 package dao
 
 import (
-  "context"
-  "github.com/unionj-cloud/go-doudou/ddl/query"
+	"context"
+	"github.com/unionj-cloud/go-doudou/toolkit/sqlext/query"
 )
 
 type Base interface {
-  Insert(ctx context.Context, data interface{}) (int64, error)
-  Upsert(ctx context.Context, data interface{}) (int64, error)
-  UpsertNoneZero(ctx context.Context, data interface{}) (int64, error)
-  DeleteMany(ctx context.Context, where query.Q) (int64, error)
-  Update(ctx context.Context, data interface{}) (int64, error)
-  UpdateNoneZero(ctx context.Context, data interface{}) (int64, error)
-  UpdateMany(ctx context.Context, data interface{}, where query.Q) (int64, error)
-  UpdateManyNoneZero(ctx context.Context, data interface{}, where query.Q) (int64, error)
-  Get(ctx context.Context, id interface{}) (interface{}, error)
-  SelectMany(ctx context.Context, where ...query.Q) (interface{}, error)
-  CountMany(ctx context.Context, where ...query.Q) (int, error)
-  PageMany(ctx context.Context, page query.Page, where ...query.Q) (query.PageRet, error)
+	Insert(ctx context.Context, data interface{}) (int64, error)
+	Upsert(ctx context.Context, data interface{}) (int64, error)
+	UpsertNoneZero(ctx context.Context, data interface{}) (int64, error)
+	Update(ctx context.Context, data interface{}) (int64, error)
+	UpdateNoneZero(ctx context.Context, data interface{}) (int64, error)
+	BeforeSaveHook(ctx context.Context, data interface{})
+	AfterSaveHook(ctx context.Context, data interface{}, lastInsertID int64, affected int64)
+
+	UpdateMany(ctx context.Context, data interface{}, where query.Q) (int64, error)
+	UpdateManyNoneZero(ctx context.Context, data interface{}, where query.Q) (int64, error)
+	BeforeUpdateManyHook(ctx context.Context, data interface{}, where query.Q)
+	AfterUpdateManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+	DeleteMany(ctx context.Context, where query.Q) (int64, error)
+	DeleteManySoft(ctx context.Context, where query.Q) (int64, error)
+	BeforeDeleteManyHook(ctx context.Context, data interface{}, where query.Q)
+	AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+	SelectMany(ctx context.Context, where ...query.Q) (interface{}, error)
+	CountMany(ctx context.Context, where ...query.Q) (int, error)
+	PageMany(ctx context.Context, page query.Page, where ...query.Q) (query.PageRet, error)
+	BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
+	
+	Get(ctx context.Context, id interface{}) (interface{}, error)
 }
 ```
 
@@ -519,7 +531,7 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 	}
 	colNum := len(rows[0])
 	rows = rows[1:]
-    gdddb := wrapper.GddDB{receiver.db}
+    gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
 	// begin transaction
 	tx, err = gdddb.BeginTxx(ctx, nil)
 	if err != nil {
@@ -675,6 +687,40 @@ func ExampleCriteria() {
 	//(((cc.`survey_id` = ? and cc.`year` = ?) and cc.`month` = ?) and cc.`stat_type` = ?) for update [abc 2021 10 2]
     //cc.`name` like ? [%ba%]
 }
+```
+
+### Sql Log
+
+go-doudou add `ISqlLogger` interface and default implementation `SqlLogger` struct for logging sql query with parameters substituted and wrap `logger.ISqlLogger` into `GddDB` and `GddTx` structs to finish sql logging feature. To use this feature, just create a `GddDB` instance, then put it into dao instance factory method.
+
+```go
+gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
+u := dao.NewUserDao(gdddb)
+// use u to do CRUD like
+// got, err := u.UpsertNoneZero(context.Background(), user)
+```
+
+If you use `SqlLogger`, remember to set environment variable `GDD_SQL_LOG_ENABLE` to `true` at first.
+
+### Hooks
+
+There are 7 hooks from generated dao layer code for you to implement business logic yourself.
+
+```go
+// for insert/upsert/update operations
+BeforeSaveHook(ctx context.Context, data interface{})
+AfterSaveHook(ctx context.Context, data interface{}, lastInsertID int64, affected int64)
+
+// for update many operations
+BeforeUpdateManyHook(ctx context.Context, data interface{}, where query.Q)
+AfterUpdateManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+// for delete many operations
+BeforeDeleteManyHook(ctx context.Context, data interface{}, where query.Q)
+AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+// for read many operations, such as SelectMany/CountMany/PageMany
+BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
 ```
 
 ### Add Dao Layer Code

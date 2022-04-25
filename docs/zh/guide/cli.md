@@ -478,23 +478,35 @@ type User struct {
 package dao
 
 import (
-  "context"
-  "github.com/unionj-cloud/go-doudou/ddl/query"
+	"context"
+	"github.com/unionj-cloud/go-doudou/toolkit/sqlext/query"
 )
 
 type Base interface {
-  Insert(ctx context.Context, data interface{}) (int64, error)
-  Upsert(ctx context.Context, data interface{}) (int64, error)
-  UpsertNoneZero(ctx context.Context, data interface{}) (int64, error)
-  DeleteMany(ctx context.Context, where query.Q) (int64, error)
-  Update(ctx context.Context, data interface{}) (int64, error)
-  UpdateNoneZero(ctx context.Context, data interface{}) (int64, error)
-  UpdateMany(ctx context.Context, data interface{}, where query.Q) (int64, error)
-  UpdateManyNoneZero(ctx context.Context, data interface{}, where query.Q) (int64, error)
-  Get(ctx context.Context, id interface{}) (interface{}, error)
-  SelectMany(ctx context.Context, where ...query.Q) (interface{}, error)
-  CountMany(ctx context.Context, where ...query.Q) (int, error)
-  PageMany(ctx context.Context, page query.Page, where ...query.Q) (query.PageRet, error)
+	Insert(ctx context.Context, data interface{}) (int64, error)
+	Upsert(ctx context.Context, data interface{}) (int64, error)
+	UpsertNoneZero(ctx context.Context, data interface{}) (int64, error)
+	Update(ctx context.Context, data interface{}) (int64, error)
+	UpdateNoneZero(ctx context.Context, data interface{}) (int64, error)
+	BeforeSaveHook(ctx context.Context, data interface{})
+	AfterSaveHook(ctx context.Context, data interface{}, lastInsertID int64, affected int64)
+
+	UpdateMany(ctx context.Context, data interface{}, where query.Q) (int64, error)
+	UpdateManyNoneZero(ctx context.Context, data interface{}, where query.Q) (int64, error)
+	BeforeUpdateManyHook(ctx context.Context, data interface{}, where query.Q)
+	AfterUpdateManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+	DeleteMany(ctx context.Context, where query.Q) (int64, error)
+	DeleteManySoft(ctx context.Context, where query.Q) (int64, error)
+	BeforeDeleteManyHook(ctx context.Context, data interface{}, where query.Q)
+	AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+	SelectMany(ctx context.Context, where ...query.Q) (interface{}, error)
+	CountMany(ctx context.Context, where ...query.Q) (int, error)
+	PageMany(ctx context.Context, page query.Page, where ...query.Q) (query.PageRet, error)
+	BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
+	
+	Get(ctx context.Context, id interface{}) (interface{}, error)
 }
 ```
 
@@ -520,7 +532,7 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 	colNum := len(rows[0])
 	rows = rows[1:]
 	// 封装数据库连接实例到GddDB类型
-    gdddb := wrapper.GddDB{receiver.db}
+    gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
 	// 开启事务
 	tx, err = gdddb.BeginTxx(ctx, nil)
 	if err != nil {
@@ -676,6 +688,40 @@ func ExampleCriteria() {
 	//(((cc.`survey_id` = ? and cc.`year` = ?) and cc.`month` = ?) and cc.`stat_type` = ?) for update [abc 2021 10 2]
     //cc.`name` like ? [%ba%]
 }
+```
+
+### Sql日志
+
+go-doudou通过`GddDB`结构体和`GddTx`结构体封装底层`*sqlx.DB`实现输出sql日志的功能。在`toolkit/sqlext/logger`包里提供了`ISqlLogger`接口，用户可以自定义实现这个接口，也可以用go-doudou默认提供的实现类`SqlLogger`结构体。`toolkit/sqlext/logger`包还提供了一个工厂方法`NewSqlLogger`来创建`SqlLogger`实例。只需将该实例传入`toolkit/sqlext/wrapper`包的工厂方法`NewGddDB`创建出`GddDB`实例，再将该实例传入ddl工具生成的dao层的工厂方法里生成dao实例即可。每次执行CRUD操作都会打印出已经替换好参数的sql语句。
+
+```go
+gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
+u := dao.NewUserDao(gdddb)
+// 使用变量u做CRUD操作，例如
+// got, err := u.UpsertNoneZero(context.Background(), user)
+```
+
+如果你采用go-doudou的默认实现`SqlLogger`，须将环境变量`GDD_SQL_LOG_ENABLE`设置为`true`。
+
+### 钩子函数
+
+ddl工具生成的dao层代码里提供了以下7个钩子函数，需用户自定义实现业务逻辑。
+
+```go
+// 在 insert/upsert/update 操作中自动调用
+BeforeSaveHook(ctx context.Context, data interface{})
+AfterSaveHook(ctx context.Context, data interface{}, lastInsertID int64, affected int64)
+
+// 在 update many 操作中自动调用
+BeforeUpdateManyHook(ctx context.Context, data interface{}, where query.Q)
+AfterUpdateManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+// 在 delete many 操作中自动调用
+BeforeDeleteManyHook(ctx context.Context, data interface{}, where query.Q)
+AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
+
+// 在 read many 操作中自动调用, 例如 SelectMany/CountMany/PageMany
+BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
 ```
 
 ### 新增dao层代码
