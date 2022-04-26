@@ -1,15 +1,15 @@
-# CLI
+# 命令行工具
 
-Go-doudou has built-in code generation CLI. `go-doudou` is the root command and there are two flags for it.
+Go-doudou内置了基于命令行终端的代码生成器。`go-doudou`是根命令，有两个参数。
 
-- `-v` can tell you current installed version of go-doudou.
+- `-v` 打印当前安装的go-doudou命令行工具的版本
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou -v     
 go-doudou version v1.0.3
 ```
 
-- `-h` can print help message. As all subcommands have this flag, I will omit it in the following documentation. 
+- `-h` 打印帮助信息。下文介绍的所有的子命令都有这个参数，就不再介绍了。
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou -h
@@ -38,12 +38,11 @@ Flags:
 Use "go-doudou [command] --help" for more information about a command.
 ```
 
-And there are several useful subcommands helping you speed up your production. Let's get into them one by one.
+Go-doudou还提供了若干子命令来加速整个开发流程。我们挨个看一下。
 
 ## version
 
-`go-doudou version` command is mainly used for upgrade `go-doudou`. It tells you not only current installed version, but also the latest release version,
-and asks you if you want to upgrade.
+`go-doudou version` 主要用于升级`go-doudou`命令行工具版本。它不仅打印当前安装版本的信息，还打印最新发布版本的信息，并且询问你是否要升级。
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou version
@@ -57,16 +56,15 @@ Use the arrow keys to navigate: ↓ ↑ → ←
 
 ## help
 
-`go-doudou help` is the same as `go-doudou -h`.
+`go-doudou help` 同`go-doudou -h`。
 
 ## svc
 
-`go-doudou svc` is the most important and the most commonly used command.
+`go-doudou svc` 是最重要和最常用的命令。
 
 ### init
 
-`go-doudou svc init` is used for initializing go-doudou application. You can run this command in an existing directory, or you can also specify a directory immediately following `init`.
-Then go-doudou will create the directory if it not exists and initial files for starting the development, and also run `git init` underlyingly. If specified directory has been already existed and not empty, go-doudou will only create non-existing files and skip existing files with warning like this:
+`go-doudou svc init` 用于初始化go-doudou应用。你既可以在已有文件夹下执行此命令，也可以在`init`后面指定需要初始化的文件夹路径。如果文件夹不存在，`go-doudou`会创建该文件夹，并且生成一些文件来便于上手开发，还会执行`git init`命令。如果指定的文件夹已经存在并且不为空，`go-doudou`会跳过已存在的文件，只生成不存在的文件，保证已有的代码不会被覆盖。
 
 ```shell
 ➜  go-doudou-tutorials git:(master) go-doudou svc init helloworld
@@ -78,29 +76,29 @@ WARN[2022-02-17 18:14:53] file /Users/wubin1989/workspace/cloud/go-doudou-tutori
 WARN[2022-02-17 18:14:53] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/helloworld/Dockerfile already exists 
 ```
 
-There is `-m` flag for customizing module name. You can use it like this:
+还有一个`-m` 参数，用于指定模块名称：
 ```shell
 go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 ```
 
 ### http
 
-`go-doudou svc http` is used for generating http routes and handlers for RESTful service. For example:
+`go-doudou svc http` 用于生成RESTful接口的http路由和handler代码
 ```shell
 go-doudou svc http --handler -c --doc
 ```
 
-#### Flags
+#### 参数
 
-There are several flags for configuring the code generation behavior. Let me explain them one by one:
+有一些参数可以配置代码生成器的行为。下面我们一一介绍一下：
 
-- `--handler`: `bool` type. If you set this flag, go-doudou will generate default http handler implementations which parse request parameters into form and decode request body into struct, and also send http response back. 
+- `--handler`: `bool`类型。如果设置了这个参数，`go-doudou`会生成默认的`http.Handler`接口实现，解析请求参数到表单对象、解析请求体到结构体对象以及返回响应体。
 
-- `-c` or `--client`: `bool` type. It is used for generating [go-resty](https://github.com/go-resty/resty) based http client code.
+- `-c` or `--client`: `bool` 类型。用于设置是否生成封装了[go-resty](https://github.com/go-resty/resty) 的http请求客户端代码。
 
 - `--doc`: `bool` type. It is used for generating [OpenAPI 3.0](https://spec.openapis.org/oas/v3.0.3) description file in json format.
 
-- `-e` or `--env`: `string` type. It is used for setting server url environment variable name. If you don't set it, it will be the upper case of service interface name in svc.go file. The name will used in client factory function like this:
+- `-e` or `--env`: `string` 类型。用于设置写进http请求客户端代码里的服务端baseUrl的环境变量名。如果没有指定，默认采用`svc.go`文件里的字母大写的服务接口名。
 
 ```go
 func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
@@ -113,7 +111,7 @@ func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
 }
 ```
 
-In line 2, the `HELLOWORLD` is the default name. As we said before, go-doudou is also supporting monolithic service. If your service client application don't want to join go-doudou cluster and use the out-of-box service discovery and client side load balancing feature, it can set `HELLOWORLD` to your service public url, and it will send requests to that url. Let's try run `go-doudou svc http --handler -c --doc -e godoudou_helloworld` to see what changes:
+上面代码的第2行，`HELLOWORLD`就是默认名称。如前文所述，go-doudou同时支持开发单体应用。如果你不需要客户端程序加入go-doudou微服务集群，享受开箱即用的服务发现和客户端负载均衡机制，你可以直接在配置文件中将`HELLOWORLD`环境变量设置为服务端可以直连的请求地址。我们来执行一下命令`go-doudou svc http --handler -c --doc -e godoudou_helloworld`，看一下有什么变化。
 
 ```go
 func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
@@ -126,30 +124,30 @@ func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
 }
 ```
 
-- `--case`: `string` type. As there are some anonymous structs defining http response body data structure in generated http handler code, we need this flag to let users configure json tag for fields. It accepts `lowerCamel` or `snake`, default is `lowerCamel`.
+- `--case`: `string` 类型。在生成的默认`http.Handler`接口实现代码里会有一些匿名结构体做为响应体，你可能需要设置这个参数来指定json序列化时的字段名称的命名规则。接受两种值：`lowerCamel` 和 `snake`。默认值为`lowerCamel`。
 
-- `-o` or `--omitempty`: `bool` type. If you set this flag, `,omitempty` will be appended to json tag of fields of every generated anonymous struct in http handlers.
+- `-o` or `--omitempty`: `bool` 类型。如果设置了这个参数，`,omitempty`会被加到默认`http.Handler`接口实现代码里的匿名结构体字段的json标签值的后面。
 
-- `-r` or `--routePattern`: `int` type. It is used for configuring http route pattern generate strategy. If you set it to `0`, go-doudou will convert name of each service interface method from upper-camel case to snake case, then replace `_` to `/`. If you set it to `1`, go-doudou will join lower-case service interface name with each lower-case method name by `/`. Default is `0` which is also recommended. Here is an example. If there is a method named `PublicSignUp` in `Usersvc` interface, its http route will be `/public/sign/up` if you don't set this flag or set this flag to `0` explicitly. If you set this flag to `1`, its http route will be `/usersvc/publicsignup`.
+- `-r` or `--routePattern`: `int` 类型。这个参数用于设置http路由的生成规则。如果值为`0`，`go-doudou`会先将服务接口的方法名称从驼峰命令转成蛇形命令，然后把下划线`_`替换成反斜线`/`，结果作为接口路径。如果值为`1`，`go-doudou`会将服务接口名转成小写，方法名也转成小写，再用反斜线`/`拼接起来，结果作为接口路径。默认值为`0`。举个例子，假设`Usersvc`接口里有一个方法名为`PublicSignUp`，默认会生成`/public/sign/up`这样的接口路径。如果你将此参数设为`1`，则接口路径为`/usersvc/publicsignup`。
 
 #### Subcommands
 
-There is only one subcommand `client` available. It is used for generating golang http client code from OpenAPI 3.0 spec json file. There are some flags for it. Let's see an example:
+只有一个子命令 `client`，用于从json格式的`OpenAPI 3.0`接口文档生成Go语言http请求客户端代码。有几个参数可配置。我用一个例子说明：
 
 ```shell
 go-doudou svc http client -o -e GRAPHHOPPER -f https://docs.graphhopper.com/openapi.json --pkg graphhopper
 ```
 
-- `-e` or `--env`: `string` type. It is used for setting server url environment variable name.
+- `-e` or `--env`: `string` 类型。用于设置写进http请求客户端代码里的服务端baseUrl的环境变量名。
 
-- `-f` or `--file`: `string` type. It is used for setting OpenAPI 3.0 spec json file path or download link.
+- `-f` or `--file`: `string` 类型。用于设置接口文档的本地路径或下载链接。
 
-- `-o` or `--omit`: `bool` type. It is used for configuring whether to append `,omitempty` to json tag.
+- `-o` or `--omit`: `bool` 类型。如果设置了这个参数，会在json标签里的字段名后面加`,omitempty`。
 
-- `-p` or `--pkg`: `string` type. It is used for setting client package name. Default is `client`.
+- `-p` or `--pkg`: `string` 类型。用于设置包名，默认值为`client`。
 
 ::: tip
-There must be `200` response in `responses` object for each api, otherwise client code will not be generated and you will see an error message from command line output for corresponding api like this:
+每个接口都需要有`200`状态码的响应体，否则不会生成该接口的代码，在命令行终端也会输出错误信息。
 
 ```shell
 ➜  go-doudou-tutorials git:(master) ✗ go-doudou svc http client -o -e PETSTORE -f https://petstore3.swagger.io/api/v3/openapi.json --pkg petstore
@@ -165,64 +163,64 @@ ERRO[2022-02-18 11:56:09] 200 response definition not found in api Delete /store
 
 ### run
 
-`go-doudou svc run` is used for starting our service in development.
+`go-doudou svc run` 用于启动服务。
 
-- `-w` or `--watch`: `bool` type. It is used for enabling watch mode. Not support on windows. I made this feature, but I am not recommending you to use it as I personally prefer to start or shutdown a program through IDE manually.
+- `-w` or `--watch`: `bool` 类型。用于开启`watch`模式，即热重启。不支持windows平台。虽然做了这个功能，但并不推荐使用。
 
 ### push
 
-`go-doudou svc push` is used for building docker image, pushing to your remote repository and generating k8s deployment files. It runs `go mod vendor`, `docker build`, `docker tag`, `docker push` commands sequentially. For example: 
+`go-doudou svc push` 用于生成docker镜像，推到远程镜像仓库，并生成k8s部署文件。实际按顺序依次执行了`go mod vendor`, `docker build`, `docker tag`, `docker push`这几个命令。
 
 ```shell
 go-doudou svc push --pre godoudou_ -r wubin1989
 ```
 
-- `--pre`: `string` type. Its value will be prefixed to image name for grouping your images.
+- `--pre`: `string` 类型。用于设置镜像文件的名称前缀。
 
-- `-r` or `--repo`: `string` type. Docker image will be pushed to this repository.
+- `-r` or `--repo`: `string` type. 用于设置远程镜像仓库地址。
 
-After executed this command, you will get two files: 
+命令执行完毕后，你会得到两个文件：
 
-- `${service}_deployment.yaml`: k8s deploy file for stateless service, recommended to be used for monolith architecture services
-- `${service}_statefulset.yaml`: k8s deploy file for stateful service, recommended to be used for microservice architecture services
+- `${service}_deployment.yaml`: 无状态的k8s应用部署文件，推荐用于单体应用架构。
+- `${service}_statefulset.yaml`: 有状态的k8s应用部署文件，推荐用于微服务架构。
 
 ### deploy
 
-`go-doudou svc deploy` is used for deploying your service to kubernetes. It runs `kubectl apply -f` command underlyingly. For example, 
+`go-doudou svc deploy` 用于将服务部署到k8s。实际执行的是`kubectl apply -f`命令。
 
 ```shell
 go-doudou svc deploy -k helloworld_deployment.yaml
 ```
 
-- `-k` or `--k8sfile`: `string` type. It is used for specifying k8s deployment file path. Default is `${service}_statefulset.yaml`.
+- `-k` or `--k8sfile`: `string` 类型。用于设置k8s部署文件的本地路径。默认值为`${service}_statefulset.yaml`。
 
 ### shutdown
 
-`go-doudou svc shutdown` is used for shutting down your service on kubernetes. It runs `kubectl delete -f` command underlyingly. For example, 
+`go-doudou svc shutdown` 用于从k8s下线服务，实际执行`kubectl delete -f`命令。
 
 ```shell
 go-doudou svc shutdown -k helloworld_deployment.yaml
 ```
 
-- `-k` or `--k8sfile`: `string` type. It is used for specifying k8s deployment file path. Default is `${service}_statefulset.yaml`.  
+- `-k` or `--k8sfile`: `string` 类型。用于设置k8s部署文件的本地路径。默认值为`${service}_statefulset.yaml`。
 
 ## ddl
 
-DDL and dao layer generation subcommand based on [jmoiron/sqlx](https://github.com/jmoiron/sqlx). Currently only support `mysql`。
+基于[jmoiron/sqlx](https://github.com/jmoiron/sqlx)的表结构同步和Dao层代码生成子命令。目前仅支持`mysql`。
 
-### Features
+### 特性
 
-- Create/Update table from go struct
-- Create/Update go struct from table
-- Generate dao layer code with basic crud operations
-- Support transaction in dao layer
-- Support index update
-- Support foreign key
+- 从Go语言结构体类型创建或更新表结构，仅新增和更新字段，不删字段
+- 从表结构生成Go语言结构体
+- 生成支持单表CRUD操作的Dao层代码
+- Dao层代码支持数据库事务
+- 支持索引的创建和更新
+- 支持外键的创建和更新
 
-### Flags
+### 命令行参数
 
 ```shell
-➜  ~ go-doudou ddl -h
+➜  go-doudou git:(main) go-doudou ddl -h 
 migration tool between database table structure and golang struct
 
 Usage:
@@ -232,39 +230,39 @@ Flags:
   -d, --dao             If true, generate dao code.
       --df string       Name of dao folder. (default "dao")
       --domain string   Path of domain folder. (default "domain")
-      --env string      Path of database connection config .env file (default ".env")
+      --env string      Environment name such as dev, uat, test, prod, default is dev (default "dev")
   -h, --help            help for ddl
       --pre string      Table name prefix. e.g.: prefix biz_ for biz_product.
   -r, --reverse         If true, generate domain code from database. If false, update or create database tables from domain code.
 ```
 
-### Quickstart
+### 快速开始
 
-- Install go-doudou
+- 安装go-doudou
 
 ```shell
 go get -v github.com/unionj-cloud/go-doudou@v1.0.3
 ```
 
-- Clone demo repository and `cd ddldemo`
+- 克隆示例代码，切到`ddldemo`路径
 
 ```shell
 git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
 ```
 
-- Start mysql container
+- 启动mysql容器
 
 ```shell
 docker-compose -f docker-compose.yml up -d
 ```
 
-- Update database table struct and generate dao layer code
+- 更新表结构和生成dao层代码
 
 ```shell
 go-doudou ddl --dao --pre=ddl_
 ```
 
-You can see below output from terminal:
+你可以看到如下的命令行输出:
 ```
 ➜  ddldemo git:(main) ls -la dao
 total 56
@@ -276,13 +274,13 @@ drwxr-xr-x  14 wubin1989  staff   448  9  1 00:28 ..
 -rw-r--r--   1 wubin1989  staff  5752  9  1 00:28 userdaosql.go
 ```
 
-- Run unit tests
+- 运行单元测试
 
 ```shell
 go test -race ./... -count=1
 ```
 
-You can see below output from terminal:
+你可以看到如下的命令行输出:
 ```
 ➜  ddldemo git:(master) go test -race ./... -count=1
 ?   	doudoudemo	[no test files]
@@ -290,41 +288,40 @@ ok  	doudoudemo/dao	0.100s
 ?   	doudoudemo/domain	[no test files]
 ```
 
-- Run `main` function
-  
+- 运行`main`函数
+
 ```shell
 go run main.go   
 ```
 
-You can see below output from terminal:
-
+你可以看到如下的命令行输出:
 ```
-➜  ddldemo git:(main) go run main.go       
+➜  ddldemo git:(master) go run main.go              
 INFO[2022-03-18 09:14:44] user jack's id is 8                          
 INFO[2022-03-18 09:14:44] returned user jack's id is 8                 
 INFO[2022-03-18 09:14:44] returned user jack's average score is 97.534 
 ```
 
-- Delete `domain` folder, `dao/userdaoimpl.go` file and `dao/userdaosql.go` file, then run below command to generate go code from tables
+- 删除`domain`文件夹，`dao/userdaoimpl.go`文件和`dao/userdaosql.go`文件，并执行如下命令，我们来看从表结构生成`go`代码的特性
 
 ```shell
 go-doudou ddl --reverse --dao --pre=ddl_
 ```
 
-You can see below output from terminal:
+你可以看到如下的命令行输出:
 ```
 ➜  ddldemo git:(master) go-doudou ddl --reverse --dao --pre=ddl_
 WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/base.go already exists 
 WARN[2022-03-18 09:22:50] file /Users/wubin1989/workspace/cloud/go-doudou-tutorials/ddldemo/dao/userdao.go already exists 
 ```
 
-- Run unit tests again
+- 再次执行单元测试
 
 ```shell
 go test -race ./... -count=1
 ```
 
-You can see below output from terminal:
+你可以看到如下的命令行输出:
 ```
 ➜  ddldemo git:(master) ✗ go test -race ./... -count=1
 ?   	doudoudemo	[no test files]
@@ -332,13 +329,13 @@ ok  	doudoudemo/dao	0.092s
 ?   	doudoudemo/domain	[no test files]
 ```
 
-- Run main function again
+- 再次执行`main`函数
 
 ```shell
 go run main.go   
 ```
 
-You can see below output from terminal:
+你可以看到如下的命令行输出:
 ```
 ➜  ddldemo git:(master) ✗ go run main.go              
 INFO[2022-03-18 09:24:57] user jack's id is 11                         
@@ -348,7 +345,7 @@ INFO[2022-03-18 09:24:57] returned user jack's average score is 97.534
 
 ### API
 
-#### Example
+#### 示例
 ```go
 package domain
 
@@ -408,21 +405,21 @@ type User struct {
 }
 ```
 
-#### Tags
+#### 标签
 
 ##### pk
 
-Primary key
+表示主键
 
 ##### auto
 
-Autoincrement
+表示自增
 
 ##### type
 
-Column type. Not required. If you don't set this tag explicitly, default rule is as below table
+字段类型，非必须。如果没有显式设置，默认的对应规则如表格所示
 
-| Go Type（including pointer type） | Column Type  |
+| Go语言类型（包括指针类型） | Mysql字段类型  |
 | :----------------: | :----------: |
 | int, int16, int32  |     int      |
 |       int64        |    bigint    |
@@ -435,45 +432,47 @@ Column type. Not required. If you don't set this tag explicitly, default rule is
 
 ##### default
 
-Default value. If value was database built-in function or expression made by built-in functions, not need single quote marks. If value was literal value, it should be quoted by single quote marks.
+默认值。如果是mysql数据库内置的函数或由内置函数构成的表达式，则不需要单引号。如果是字面值，则需要单引号。
 
 ##### extra
 
-Extra definition. Example: "on update CURRENT_TIMESTAMP"，"comment 'cellphone number'"  
-**Note：don't use ; and : in comment**
+额外定义。示例："on update CURRENT_TIMESTAMP"，"comment 'cellphone number'"  
+**注意：在`comment`里不要出现英文分号`;`和英文冒号`:`**
 
 ##### index
 
-- Format: "index:Name,Order,Sort" or "index"
-- `Name`: index name. string. If multiple fields use the same index name, the index will be created as composite index. Not required. Default index name is column name + _idx
-- `Order`:int
-- `Sort`: string. Only accept `asc` and `desc`. Not required. Default is asc
+设置索引。
+
+- 格式："index:Name,Order,Sort" or "index"
+- `Name`: 索引名称，字符串类型。如果有多个字段设置了相同的索引名称，则会在该表中创建复合索引。非必须。默认值为`字段名_idx`
+- `Order`: 顺序，`int`类型 
+- `Sort`: 排序规则，字符串类型。仅接受两种值：`asc` 和 `desc`。非必须。默认值是`asc`
 
 ##### unique
 
-Unique index. Usage is the same as index.
+唯一索引，用法同索引。
 
 ##### null
 
-Nullable. **Note: if the field is a pointer, null is default.**
+可接受`null`值. **注意：如果字段类型是指针类型，则默认可接受`null`值**
 
 ##### unsigned
 
-Unsigned
+无符号
 
 ##### fk
 
-- Format："fk:ReferenceTableName,ReferenceTablePrimaryKey,Constraint,Action"  
-- ReferenceTableName: reference table name
-- ReferenceTablePrimaryKey: reference table primary key such as `id`
-- Constraint: foreign key constraint such as `fk_publisher`
-- Action: for example: `ON DELETE CASCADE ON UPDATE NO ACTION`
+设置外键
 
+- 格式："fk:ReferenceTableName,ReferenceTablePrimaryKey,Constraint,Action"  
+- `ReferenceTableName`：关联表名称
+- `ReferenceTablePrimaryKey`：关联表主键，如`id`
+- `Constraint`：外键名称，如`fk_publisher`
+- `Action`：示例：`ON DELETE CASCADE ON UPDATE NO ACTION`
 
+#### Dao层代码
 
-#### Dao layer code
-
-##### Single Table CRUD
+##### 单表CRUD
 
 ```go
 package dao
@@ -511,8 +510,9 @@ type Base interface {
 }
 ```
 
-##### Transaction
-Example：
+##### 数据库事务
+
+示例：
 ```go
 func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, sheet string) (err error) {
 	types := []string{"food", "tool"}
@@ -531,8 +531,9 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 	}
 	colNum := len(rows[0])
 	rows = rows[1:]
+	// 封装数据库连接实例到GddDB类型
     gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
-	// begin transaction
+	// 开启事务
 	tx, err = gdddb.BeginTxx(ctx, nil)
 	if err != nil {
 		return errors.Wrap(err, "")
@@ -547,7 +548,7 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 			}
 		}
 	}()
-	// inject tx as ddl.Querier into dao layer implementation instance
+	// 将tx作为ddl.Querier实例注入dao层的工厂方法创建dao实例
 	mdao := dao.NewMaterialDao(tx)
 	for _, item := range rows {
 		if len(item) == 0 {
@@ -572,13 +573,13 @@ func (receiver *StockImpl) processExcel(ctx context.Context, f multipart.File, s
 			Type:        int8(sliceutils.IndexOf(sheet, types)),
 			Note:        note,
 		}); err != nil {
-			// rollback if err != nil
+			// 如果有错误，则回滚
 			_ = tx.Rollback()
 			return errors.Wrap(err, "")
 		}
 	}
 END:
-	// commit
+	// 提交事务
 	if err = tx.Commit(); err != nil {
         _ = tx.Rollback()
 		return errors.Wrap(err, "")
@@ -587,9 +588,9 @@ END:
 }
 ```
 
-#### Query Dsl
+#### Sql语句构建DSL
 
-##### Example
+##### 示例
 
 ```go
 func ExampleCriteria() {
@@ -689,56 +690,56 @@ func ExampleCriteria() {
 }
 ```
 
-### Sql Log
+### Sql日志
 
-go-doudou add `ISqlLogger` interface and default implementation `SqlLogger` struct for logging sql query with parameters substituted and wrap `logger.ISqlLogger` into `GddDB` and `GddTx` structs to finish sql logging feature. To use this feature, just create a `GddDB` instance, then put it into dao instance factory method.
+go-doudou通过`GddDB`结构体和`GddTx`结构体封装底层`*sqlx.DB`实现输出sql日志的功能。在`toolkit/sqlext/logger`包里提供了`ISqlLogger`接口，用户可以自定义实现这个接口，也可以用go-doudou默认提供的实现类`SqlLogger`结构体。`toolkit/sqlext/logger`包还提供了一个工厂方法`NewSqlLogger`来创建`SqlLogger`实例。只需将该实例传入`toolkit/sqlext/wrapper`包的工厂方法`NewGddDB`创建出`GddDB`实例，再将该实例传入ddl工具生成的dao层的工厂方法里生成dao实例即可。每次执行CRUD操作都会打印出已经替换好参数的sql语句。
 
 ```go
 gdddb := wrapper.NewGddDB(db, wrapper.WithLogger(logger.NewSqlLogger(log.Default())))
 u := dao.NewUserDao(gdddb)
-// use u to do CRUD like
+// 使用变量u做CRUD操作，例如
 // got, err := u.UpsertNoneZero(context.Background(), user)
 ```
 
-If you use `SqlLogger`, remember to set environment variable `GDD_SQL_LOG_ENABLE` to `true` at first.
+如果你采用go-doudou的默认实现`SqlLogger`，须将环境变量`GDD_SQL_LOG_ENABLE`设置为`true`。
 
-### Hooks
+### 钩子函数
 
-There are 7 hooks from generated dao layer code for you to implement business logic yourself.
+ddl工具生成的dao层代码里提供了以下7个钩子函数，需用户自定义实现业务逻辑。
 
 ```go
-// for insert/upsert/update operations
+// 在 insert/upsert/update 操作中自动调用
 BeforeSaveHook(ctx context.Context, data interface{})
 AfterSaveHook(ctx context.Context, data interface{}, lastInsertID int64, affected int64)
 
-// for update many operations
+// 在 update many 操作中自动调用
 BeforeUpdateManyHook(ctx context.Context, data interface{}, where query.Q)
 AfterUpdateManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
 
-// for delete many operations
+// 在 delete many 操作中自动调用
 BeforeDeleteManyHook(ctx context.Context, data interface{}, where query.Q)
 AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affected int64)
 
-// for read many operations, such as SelectMany/CountMany/PageMany
+// 在 read many 操作中自动调用, 例如 SelectMany/CountMany/PageMany
 BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
 ```
 
-### Add Dao Layer Code
+### 新增dao层代码
 
-In development, we must need to write some custom dao layer CRUD code. How? Let me explain it using `user` table as an example: 
+实际开发中，我们一定需要自己编写一些更复杂的CRUD代码。怎么做呢？下面我们以`user`表为例来说明开发步骤：
 
-- At first, we should define methods of `UserDao` interface in `dao/userdao.go` file, for example:
+- 首先需要在`dao`文件夹下的`userdao.go`文件里的`UserDao`接口里定义方法，例如：
 ```go
 type UserDao interface {
 	Base
 	FindUsersByHobby(ctx context.Context, hobby string) ([]domain.User, error)
 }
 ```
-We defined a `FindUsersByHobby` method here
+我们这里加了一个`FindUsersByHobby`方法
 
-- Then we should create a new file named `userdaoimplext.go` in `dao` folder. The file name can be arbitrary, but recommend to name it by table name got rid of prefix + `daoimplext.go` pattern
+- 然后我们需要在`dao`文件夹下新建一个文件`userdaoimplext.go`，文件名任意，但推荐以去掉前缀的表名 + `daoimplext.go`的方式命名
 
-- We write our own implementation for `FindUsersByHobby` method in the new file
+- 在新创建的文件里编写`FindUsersByHobby`方法的实现
 ```go
 func (receiver UserDaoImpl) FindUsersByHobby(ctx context.Context, hobby string) (users []domain.User, err error) {
 	sqlStr := `select * from ddl_user where hobby = ? and delete_at is null`
@@ -746,7 +747,7 @@ func (receiver UserDaoImpl) FindUsersByHobby(ctx context.Context, hobby string) 
 	return
 }
 ```
-- We create a new file `userdaoimplext_test.go` to write unit tests
+- 我们新建一个测试文件`userdaoimplext_test.go`，编写单元测试
 ```go
 func TestUserDaoImpl_FindUsersByHobby(t *testing.T) {
 	t.Parallel()
@@ -757,25 +758,25 @@ func TestUserDaoImpl_FindUsersByHobby(t *testing.T) {
 }
 ```
 
-### Best Practices
+### 最佳实践
 
-Below best practices are from author's experience, only for reference.
+下面说的几点最佳实践只是作者总结的，仅供参考。
 
-- Design all table structures by database design tools like `Navicat` or `Mysql Workbench` at the beginning of development.
-- Then run `go-doudou ddl --reverse --dao` to generate initial code. Using `--reverse` flag when initialising projects only.
-- At the following project iteration, after modified domain structs in `domain` folder, you should delete `sql.go` suffixed files such as `userdaosql.go` at first, then run `go-doudou ddl --dao` to sync changes to table structures and generate `sql.go` suffixed files at the same time. If you also changed table name or table name prefix, you should also delete `daoimpl.go` suffixed files such as `userdaoimpl.go` and regenerate them.
-- Custom dao layer code must be written in new files, don't modify `base.go` file, `daoimpl.go` suffixed files and `daosql.go` suffixed files manually. In the whole project lifecycle, you must make sure that these files could be removed and regenerated at any time, but not produce bugs to the program.
+- 先通过`Navicat`或者`Mysql Workbench`之类的数据库设计工具整体设计表结构
+- 再通过命令`go-doudou ddl --reverse --dao`命令一把生成Go代码，`--reverse`参数仅在初始化项目时使用
+- 后续开发迭代过程中，修改`domain`文件夹的代码以后，须先将`dao`文件夹中的以`sql.go`为后缀的文件，如`userdaosql.go`删掉，再通过命令`go-doudou ddl --dao`将修改同步到数据库表结构，同时重新生成`sql.go`为后缀的文件。如果修改了表名称或者表前缀，则`dao`文件夹中的以`daoimpl.go`为后缀的文件，如`userdaoimpl.go`也需要删掉并重新生成。
+- 新增dao层代码一定要在新建的文件里编写，一定不要人工修改`dao`文件夹里的`base.go`、以`daoimpl.go`为后缀和以`daosql.go`为后缀的这三类文件的代码，在整个项目生命周期里这三类文件都必须是可以随时删除随时重新生成且不影响程序功能的
 
 ## name
 
-Subcommand for generating json tag of struct field. Default strategy is lower-camel. Support snake case as well. Unexported fields will be skipped, only modify json tag of each exported field.
+根据指定的命名规则生成结构体字段后面的`json`tag。默认生成策略是**首字母小写的驼峰命名策略**，同时支持蛇形命名。未导出的字段会跳过，只修改导出字段的json标签。支持`omitempty`。
 
-### Flags
+
+### 命令行参数
 
 ```shell
-➜  go-doudou git:(main) go-doudou name -h   
-WARN[0000] Error loading .env file: open /Users/wubin1989/workspace/cloud/.env: no such file or directory 
-bulk add or update struct fields json tag
+➜  go-doudou git:(main) go-doudou name -h
+bulk add or update json tag of struct fields
 
 Usage:
   go-doudou name [flags]
@@ -787,9 +788,9 @@ Flags:
   -s, --strategy string   name of strategy, currently only support "lowerCamel" and "snake" (default "lowerCamel")
 ```
 
-### Usage
+### 用法
 
-- Put `//go:generate go-doudou name --file $GOFILE` into go file
+- 在go文件里写上`//go:generate go-doudou name --file $GOFILE`，不限位置，最好是写在上方。目前的实现是对整个文件的所有struct都生效。
 
 ```go
 //go:generate go-doudou name --file $GOFILE
@@ -816,7 +817,7 @@ type TestName struct {
 }
 ```
 
-- Execute  `go generate ./...` at the same folder
+- 在项目根路径下执行命令`go generate ./...`
 
 ```go
 type Event struct {
@@ -840,6 +841,7 @@ type TestName struct {
 	CallbackN func(param string) bool `json:"callbackN"`
 }
 ```
+
 
 
 

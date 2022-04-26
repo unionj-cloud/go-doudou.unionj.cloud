@@ -1,27 +1,27 @@
-# Generation Behaviors
+# 代码生成规则
 
-Besides understanding `go-doudou` CLI flags and subcommands usage, you should also know generation behaviors on generated files. I group them into three kind of behaviors `Incremental Generation`, `Overwritten Generation` and `Skip Generation`.
+除了理解`go-doudou`命令行工具的用法，你还需要了解代码生成规则。我将规则分成了三类：“增量生成”，“覆盖生成”和“跳过”。
 
-## Incremental Generation
+## 增量生成
 
-- `svcimpl.go`: Every time you run `go-doudou svc http`, existing code in it will not be overwritten, only new code will be appended to the end. So you can feel free to remove the generated code and write your own to fit your need. You will not lost any code, even rerun this command again and again as your will.
+- `svcimpl.go`: 每次执行`go-doudou svc http`命令，已有代码不会被覆盖，只会在文件末尾新增代码，所以你可以自由修改生成的代码以适应你的业务需求。重复执行此命令，不会让你丢失任何人工编写的代码。
 
-- `transport/httpsrv/handlerimpl.go`: Every time you run `go-doudou svc http` with `--handler` flag, existing code in it will not be overwritten, only new code will be appended to the end. So you can feel free to remove the generated code and write your own to fit your need. You will not lost any code, even rerun this command again and again as your will.
+- `transport/httpsrv/handlerimpl.go`: 每次执行带上`--handler`参数的`go-doudou svc http`命令，已有代码不会被覆盖，只会在文件末尾新增代码，所以你可以自由修改生成的代码以适应你的业务需求。重复执行此命令，不会让你丢失任何人工编写的代码。
 
-- `client/clientproxy.go`: Every time you run `go-doudou svc http` with `-c` flag, existing code in it will not be overwritten, only new code will be appended to the end. So you can feel free to remove the generated code and write your own to fit your need. You will not lost any code, even rerun this command again and again as your will.
+- `client/clientproxy.go`: 每次执行带上`-c`参数的`go-doudou svc http`命令，已有代码不会被覆盖，只会在文件末尾新增代码，所以你可以自由修改生成的代码以适应你的业务需求。重复执行此命令，不会让你丢失任何人工编写的代码。
 
-## Overwritten Generation
+## 覆盖生成
 
-- `transport/httpsrv/handler.go`: Every time you run `go-doudou svc http`, existing code in it will be overwritten. So don't edit it.
+- `transport/httpsrv/handler.go`: 每次执行`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
-- `client/client.go`: Every time you run `go-doudou svc http` with `-c` flag, existing code in it will be overwritten. So don't edit it.
+- `client/client.go`: 每次执行带上`-c`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
-- `client/iclient.go`: Every time you run `go-doudou svc http` with `-c` flag, existing code in it will be overwritten. So don't edit it.
+- `client/iclient.go`: 每次执行带上`-c`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
-- `${service}_openapi3.go`: Every time you run `go-doudou svc http` with `--doc` flag, existing code in it will be overwritten. So don't edit it.
+- `${service}_openapi3.go`: 每次执行带上`--doc`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
-- `${service}_openapi3.json`: Every time you run `go-doudou svc http` with `--doc` flag, existing code in it will be overwritten. So don't edit it.
+- `${service}_openapi3.json`: 每次执行带上`--doc`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
-## Skip Generation
+## 跳过
 
-The other files will be skipped if they have been already generated.
+其他文件如果已经存在，都会跳过。

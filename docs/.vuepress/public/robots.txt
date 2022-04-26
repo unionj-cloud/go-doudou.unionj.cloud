@@ -1,3 +1,3 @@
 User-agent: *
 Disallow: 
-Sitemap: https://go-doudou.unionj.cloud/sitemap_zh.xml
+Sitemap: https://go-doudou.unionj.cloud/sitemap.xml

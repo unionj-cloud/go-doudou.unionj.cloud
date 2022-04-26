@@ -4,15 +4,15 @@ import { version } from '../meta'
 export const zh: NavbarConfig = [
   {
     text: '指南',
-    link: '/zh/guide/',
+    link: '/guide/',
   },
   {
     text: '资源',
-    link: '/zh/resources/',
+    link: '/resources/',
   },
   {
     text: '贡献',
-    link: '/zh/contribution/',
+    link: '/contribution/',
   },
   {
     text: `v${version}`,
@@ -26,5 +26,9 @@ export const zh: NavbarConfig = [
         link: 'https://github.com/unionj-cloud/go-doudou/releases',
       },
     ],
+  },
+  {
+    text: `En`,
+    link: 'https://go-doudou.github.io',
   },
 ]
