@@ -1,6 +1,6 @@
 ---
 home: true
-title: Home
+title: go-doudou microservice fast development framework for golang
 heroImage: /hero.png
 actions:
   - text: Get Started
