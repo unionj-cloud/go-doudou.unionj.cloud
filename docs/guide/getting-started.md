@@ -9,16 +9,16 @@
 ## 安装
 - 如果Go版本低于1.17
 ```shell
-go get -v github.com/unionj-cloud/go-doudou@v1.0.3
+go get -v github.com/unionj-cloud/go-doudou@v1.0.6
 ```
 
 - 如果Go版本 >= 1.17，推荐采用如下命令全局安装`go-doudou`命令行工具
 ```shell
-go install -v github.com/unionj-cloud/go-doudou@v1.0.3
+go install -v github.com/unionj-cloud/go-doudou@v1.0.6
 ```
 推荐采用如下命令下载go-doudou作为项目的依赖
 ```shell
-go get -v -d github.com/unionj-cloud/go-doudou@v1.0.3
+go get -v -d github.com/unionj-cloud/go-doudou@v1.0.6
 ```
 
 ::: tip
@@ -27,6 +27,25 @@ go get -v -d github.com/unionj-cloud/go-doudou@v1.0.3
 ```shell
 export GOSUMDB=off
 ``` 
+
+安装完成后，如果遇到`go-doudou: command not found`报错，请将`$HOME/go/bin`配置到`~/.bash_profile`文件里，例如：
+
+```shell
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:/usr/local/go/bin
+PATH=$PATH:$HOME/go/bin
+
+export PATH
+```
+
 :::
 
 ## 升级
@@ -34,10 +53,10 @@ export GOSUMDB=off
 ```shell
 ➜  ~ go-doudou version                       
 Installed version is v0.9.8
-Latest release version is v1.0.3
+Latest release version is v1.0.6
 ✔ Yes
-go install -v github.com/unionj-cloud/go-doudou@v1.0.3
-go: downloading github.com/unionj-cloud/go-doudou v1.0.3
+go install -v github.com/unionj-cloud/go-doudou@v1.0.6
+go: downloading github.com/unionj-cloud/go-doudou v1.0.6
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/columnenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/sortenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/nullenum
@@ -69,7 +88,7 @@ github.com/unionj-cloud/go-doudou/cmd
 github.com/unionj-cloud/go-doudou
 DONE
 ➜  ~ go-doudou version
-Installed version is v1.0.3
+Installed version is v1.0.6
 ➜  ~ 
 ```  
 
