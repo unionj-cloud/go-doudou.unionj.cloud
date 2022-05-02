@@ -4,7 +4,7 @@ sidebar: auto
 
 # 资源
 
-## 博客
+## 教程
 
 - [go-doudou series 01: How to develop a monolithic RESTful service with go-doudou](https://dev.to/wubin1989/go-doudou-series-01-how-to-develop-a-monolithic-restful-service-with-go-doudou-8gl)
 - [快速上手go-doudou开发单体RESTful服务](https://juejin.cn/post/7046936284438200333)
