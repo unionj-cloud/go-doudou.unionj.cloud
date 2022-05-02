@@ -2,7 +2,7 @@
 sidebar: auto
 ---
 
-# 深入解读go-doudou内置服务注册与发现组件memberlist
+# 深入解读go-doudou内置服务注册与发现组件
 
 go-doudou是2021年初开源的go语言开发的微服务框架。最初基于hashicorp开源的memberlist库打造了内置于go-doudou框架中开箱即用的遵循SWIM gossip协议的去中心化的服务注册与发现机制。SWIM Gossip协议是一种弱一致性的协议，不仅具有去中心化的特性，还具备服务注册、节点探活、消息广播等机制，非常适合做服务注册与发现中间件。
 
