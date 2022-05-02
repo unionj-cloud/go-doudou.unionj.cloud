@@ -363,12 +363,6 @@ func NewMemberlist(conf *Config) (*Memberlist, error) {
 			return nil, fmt.Errorf("failed to obtain an address: %v", err)
 		}
 
-		// The dynamic bind port operation is inherently racy because
-		// even though we are using the kernel to find a port for us, we
-		// are attempting to bind multiple protocols (and potentially
-		// multiple addresses) with the same port number. We build in a
-		// few retries here since this often gets transient errors in
-		// busy unit tests.
 		limit := 1
 		if conf.BindPort == 0 {
 			limit = 10
