@@ -16,6 +16,8 @@ go-doudou是2021年初开源的go语言开发的微服务框架。最初基于ha
 
 ### 下载代码
 
+克隆仓库源码到本地后，请切到wordcloud文件夹。
+
 ```
 git clone git@github.com:unionj-cloud/go-doudou-tutorials.git
 ```
