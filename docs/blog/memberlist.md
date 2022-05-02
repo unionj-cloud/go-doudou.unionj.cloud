@@ -34,7 +34,7 @@ make up
 
 ### 初始化minio
 
-本案例采用minio来存储用户上传的文件，需要做一些初始化工作。首先打开浏览器并导航到[http://localhost:9001/](http://localhost:9001/)，然后用账号密码minio/minio123登录，创建一个桶wordcloud，
+本案例采用minio来存储用户上传的文件，需要做一些初始化工作。首先打开[http://localhost:9001/](http://localhost:9001/)，然后用账号密码minio/minio123登录，创建一个桶wordcloud，
 并设置为`Access Policy`设置为`public`，最后创建`access key`：testkey和`access secret`：testsecret。
 
 ![go-doudou](/images/minio1.png)
@@ -45,7 +45,7 @@ make up
 
 ### 使用系统
 
-打开浏览器并导航到[http://localhost:3100/](http://localhost:3100/)，用默认账号密码jackchen/1234登录，然后上传任意text格式文件，经过一番处理可以看到页面上输出词云图。
+打开[http://localhost:3100/](http://localhost:3100/)，用默认账号密码jackchen/1234登录，然后上传任意text格式文件，经过一番处理可以看到页面上输出词云图。
 
 ![go-doudou](/images/wordcloud.png)
 
@@ -81,6 +81,12 @@ make up
 
 16 directories, 6 files
 ```
+
+### 服务列表
+
+读者可以打开[http://localhost:6060/go-doudou/registry](http://localhost:6060/go-doudou/registry)查看服务列表。需要输入Http basic账号密码admin/admin。
+
+![go-doudou](/images/registry.png)
 
 ### 代码解读
 
