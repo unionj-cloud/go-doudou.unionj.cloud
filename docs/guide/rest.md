@@ -284,7 +284,7 @@ func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http
 ## 隔仓
 ### 用法
 
-Go-doudou在`github.com/unionj-cloud/go-doudou/framework/http`包中内置了基于 [github.com/slok/goresilience](github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
+Go-doudou在`github.com/unionj-cloud/go-doudou/framework/http`包中内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
 
 ```go
 http.BulkHead(3, 10*time.Millisecond)
@@ -322,7 +322,7 @@ func main() {
 
 ### 用法
 
-Go-doudou在生成的客户端代码里内置了基于 [github.com/slok/goresilience](github.com/slok/goresilience) 封装的熔断/超时/重试等弹性机制的代码。你只需要执行如下命令，生成客户端代码拿来用即可
+Go-doudou在生成的客户端代码里内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的熔断/超时/重试等弹性机制的代码。你只需要执行如下命令，生成客户端代码拿来用即可
 
 ```shell
 go-doudou svc http --handler -c --doc
