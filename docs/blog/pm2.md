@@ -96,6 +96,8 @@ npm install -g pm2 --registry=https://registry.npm.taobao.org
 
 ### 安装mysql
 
+本文要演示的实战案例采用mysql数据库做数据持久化。读者可以根据自己的实际情况选择是否跳过本节。
+
 添加mysql仓库地址
 
 ```shell
