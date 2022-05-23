@@ -206,7 +206,7 @@ go-doudou svc shutdown -k helloworld_deployment.yaml
 
 ## ddl
 
-已从ddl工具升级为轻量级orm，请跳转[轻量级orm](../orm/README.md)章节。
+已从ddl工具升级为轻量级orm，请跳转[ORM](../orm/README.md)章节。
 
 ## name
 
