@@ -7,6 +7,10 @@ export const zh: NavbarConfig = [
     link: '/guide/',
   },
   {
+    text: 'ORM',
+    link: '/orm/',
+  },
+  {
     text: '资源',
     link: '/resources/',
   },

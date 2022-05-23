@@ -16,4 +16,17 @@ export const zh: SidebarConfig = {
       ],
     },
   ],
+  '/orm/': [
+    {
+      text: 'ORM',
+      children: [
+        '/orm/README.md',
+        '/orm/getting-started.md',
+        '/orm/ddl.md',
+        '/orm/dsl.md',
+        '/orm/log.md',
+        '/orm/cache.md',
+      ],
+    },
+  ],
 }
