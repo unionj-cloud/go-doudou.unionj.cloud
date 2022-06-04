@@ -568,3 +568,70 @@ networks:
 ### 截图
 
 ![grafana](/images/grafana.png)
+
+## 限制请求体大小
+
+为了服务的稳定和安全，限制请求体的大小是必要的，我们可以用`ddhttp`包里的`BodyMaxBytes`中间件实现这个需求。
+
+```go
+package main
+
+import (
+	...
+)
+
+func main() {
+	...
+
+	handler := httpsrv.NewOrdersvcHandler(svc)
+	srv := ddhttp.NewDefaultHttpSrv()
+	// 限制请求体大小不超过32M
+	srv.Use(ddhttp.BodyMaxBytes(32 << 20))
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
+}
+```
+
+## 网关
+
+在项目实践中，一个前端工程可能需要调用多个服务接口，前端同事做配置会很不方便，这时网关服务就派上用场了。前端同事只需要在配置文件中配置一个网关服务地址即可，然后通过`/服务名称/接口路径`的方式就可以请求到多个不同的微服务。我们可以用`ddhttp`包的`Proxy`中间件实现这个需求。
+
+```go
+package main
+
+import (
+	...
+)
+
+func main() {
+	// 网关服务必须自己也注册到nacos服务注册中心或者加入memberlist集群，或者同时加入
+	err := registry.NewNode()
+	if err != nil {
+		logrus.Panic(fmt.Sprintf("%+v", err))
+	}
+	defer registry.Shutdown()
+
+	conf := config.LoadFromEnv()
+	svc := service.NewGateway(conf)
+	handler := httpsrv.NewGatewayHandler(svc)
+	srv := ddhttp.NewDefaultHttpSrv()
+	// 这里加上Proxy中间件即可
+	srv.AddMiddleware(ddhttp.Proxy(ddhttp.ProxyConfig{}))
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
+}
+```
+
+`.env`配置文件示例
+```shell
+GDD_SERVICE_NAME=gateway
+GDD_SERVICE_DISCOVERY_MODE=memberlist,nacos
+
+GDD_MEM_PORT=65353
+GDD_MEM_SEED=localhost:7946
+GDD_MEM_HOST=
+GDD_MEM_NAME=gateway
+
+GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos
+GDD_NACOS_NOT_LOAD_CACHE_AT_START=true
+```
