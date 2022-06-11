@@ -635,3 +635,5 @@ GDD_MEM_NAME=gateway
 GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos
 GDD_NACOS_NOT_LOAD_CACHE_AT_START=true
 ```
+
+*注意：* 注册在nacos注册中心的非go-doudou框架开发的应用，如果有路由前缀，则必须将其设置到`metadata`里的`"rootPath"`属性，否则网关可能会报404。
