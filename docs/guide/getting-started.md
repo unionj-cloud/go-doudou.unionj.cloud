@@ -9,16 +9,16 @@
 ## 安装
 - 如果Go版本低于1.17
 ```shell
-go get -v github.com/unionj-cloud/go-doudou@v1.1.3
+go get -v github.com/unionj-cloud/go-doudou@v1.1.8
 ```
 
 - 如果Go版本 >= 1.17，推荐采用如下命令全局安装`go-doudou`命令行工具
 ```shell
-go install -v github.com/unionj-cloud/go-doudou@v1.1.3
+go install -v github.com/unionj-cloud/go-doudou@v1.1.8
 ```
 推荐采用如下命令下载go-doudou作为项目的依赖
 ```shell
-go get -v -d github.com/unionj-cloud/go-doudou@v1.1.3
+go get -v -d github.com/unionj-cloud/go-doudou@v1.1.8
 ```
 
 ::: tip
@@ -53,10 +53,10 @@ export PATH
 ```shell
 ➜  ~ go-doudou version                       
 Installed version is v0.9.8
-Latest release version is v1.1.3
+Latest release version is v1.1.8
 ✔ Yes
-go install -v github.com/unionj-cloud/go-doudou@v1.1.3
-go: downloading github.com/unionj-cloud/go-doudou v1.1.3
+go install -v github.com/unionj-cloud/go-doudou@v1.1.8
+go: downloading github.com/unionj-cloud/go-doudou v1.1.8
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/columnenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/sortenum
 github.com/unionj-cloud/go-doudou/toolkit/sqlext/nullenum
@@ -88,7 +88,7 @@ github.com/unionj-cloud/go-doudou/cmd
 github.com/unionj-cloud/go-doudou
 DONE
 ➜  ~ go-doudou version
-Installed version is v1.1.3
+Installed version is v1.1.8
 ➜  ~ 
 ```  
 

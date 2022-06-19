@@ -3,7 +3,7 @@
 - 安装go-doudou
 
 ```shell
-go get -v github.com/unionj-cloud/go-doudou@v1.1.3
+go get -v github.com/unionj-cloud/go-doudou@v1.1.8
 ```
 
 - 克隆示例代码，切到`ddldemo`路径

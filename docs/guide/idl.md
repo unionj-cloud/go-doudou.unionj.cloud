@@ -21,13 +21,11 @@ Go-doudou没有重新造轮子，直接采用Go语言接口类型来做为接口
 	- 不支持请求头和响应头，全局参数以及权限校验。你可以把这些内容作为Go语言注释，写在接口声明的上方或者接口方法签名的上方，这些注释会作为`description`的值生成到接口文档里，然后显示在在线接口文档页面的相应位置。
 	- 不支持[Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). 你可能并不会用到这些API，但我需要在这里提一下。
 
-## 特殊类型
-
-### 枚举
+## 枚举
 
 go-doudou 从v1.0.5起新增对枚举的支持。
 
-#### 定义方法
+### 定义方法
 
 1. 在`vo`包里定义一个基础类型的别名类型作为枚举类型，并且实现`github.com/unionj-cloud/go-doudou/toolkit/openapi/v3`包里的`IEnum`接口
 
@@ -42,7 +40,7 @@ type IEnum interface {
 
 2. 定义若干该枚举类型的常量
 
-#### 示例代码
+### 示例代码
 
 完整的demo代码，请移步 [go-doudou-tutorials/enumdemo](https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/enumdemo)
 
@@ -112,7 +110,112 @@ type Keyboard struct {
 }
 ```
 
-## 示例代码
+## 注解
+
+go-doudou 从v1.1.7起新增对注解的支持。
+
+开发者可以在接口方法定义上方的go语言文档注释中添加自定义的注解来给接口添加元数据，方便在编写自定义中间件的时候读取这些数据实现统一的业务处理。
+
+### 定义方法
+
+定义格式：`@注解名称(参数1,参数2)`。
+
+定义规则：
+1. 注解可以写在go语言文档注释中的任意位置，前后都可以有其他文字说明，且无需空格
+2. 注解必须以`@`符号开头，注解名称中不能有空白字符
+3. 英文括号`()`里的内容会解析成字符串切片类型的参数，多个参数以英文逗号`,`分隔，可以不定义任何参数，但是英文括号不能省
+
+示例：`@role(admin)`、`@permission(create,update,del)`、`@inner()`
+
+### 生成代码
+
+go-doudou 通过解析开发者定义的注解，在`transport/httpsrv/handler.go`文件中生成`github.com/unionj-cloud/go-doudou/framework/http/model.AnnotationStore`类型的包级别的实例`RouteAnnotationStore`。开发者可以在middleware里通过`httpsrv.RouteAnnotationStore`读取注解，实现自定义的业务逻辑。
+
+以下是生成代码的示例代码：
+
+```go
+// AnnotationStore类型实际是map[string][]Annotation的别名
+// key是mux路由名称
+var RouteAnnotationStore = ddmodel.AnnotationStore{
+	"ProtectApi": {
+		{
+			Name: "@role",
+			Params: []string{
+				"ADMIN",
+			},
+		},
+	},
+}
+```
+
+### 使用方法
+
+开发者可以在自定义中间件中，通过gorilla mux提供的静态方法`mux.CurrentRoute(r)`获取到当前路由实例，再通过该路由实例获取到路由名称，调用`httpsrv.RouteAnnotationStore`的`GetParams`方法就可以拿到当前路由的注解信息。
+
+以下是示例代码：
+
+```go
+func Auth(client authClient.IAuthClient) func(inner http.Handler) http.Handler {
+	return func(inner http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			currentRoute := mux.CurrentRoute(r)
+			if currentRoute == nil {
+				inner.ServeHTTP(w, r)
+				return
+			}
+			routeName := currentRoute.GetName()
+			if !httpsrv.RouteAnnotationStore.HasAnnotation(routeName, "@role") {
+				inner.ServeHTTP(w, r)
+				return
+			}
+			authHeader := r.Header.Get("Authorization")
+			baseToken := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+
+			if stringutils.IsEmpty(baseToken) {
+				if err := r.ParseForm(); err != nil {
+					w.WriteHeader(401)
+					w.Write([]byte("Unauthorised\n"))
+					return
+				}
+				baseToken = r.FormValue("t")
+			}
+
+			if stringutils.IsEmpty(baseToken) {
+				w.WriteHeader(401)
+				w.Write([]byte("Unauthorised\n"))
+				return
+			}
+
+			if stringutils.IsNotEmpty(baseToken) {
+				var (
+					err    error
+					userVo vo.UserVo
+				)
+				if _, userVo, err = client.GetUserByToken(r.Context(), nil, baseToken); err != nil {
+					w.WriteHeader(401)
+					w.Write([]byte("Unauthorised\n"))
+					return
+				}
+				role := service.USER
+				if userVo.SuperAdmin {
+					role = service.SUPER_ADMIN
+				}
+				params := httpsrv.RouteAnnotationStore.GetParams(routeName, "@role")
+				if !sliceutils.StringContains(params, role.StringGetter()) {
+					w.WriteHeader(403)
+					w.Write([]byte("Access denied\n"))
+					return
+				}
+				inner.ServeHTTP(w, r.WithContext(service.NewLoginUserContext(r.Context(), userVo)))
+			} else {
+				inner.ServeHTTP(w, r)
+			}
+		})
+	}
+}
+```
+
+## 更多示例
 ```go
 package service
 
@@ -129,6 +232,7 @@ import (
 type Usersvc interface {
 	// PageUsers 用户分页查询接口
 	// 演示如何定义post请求的，application/json类型的接口
+	// @role(user)
 	PageUsers(ctx context.Context,
 		// pagination parameter
 		query vo.PageQuery) (
