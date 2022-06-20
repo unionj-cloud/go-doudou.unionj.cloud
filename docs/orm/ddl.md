@@ -1,4 +1,4 @@
-# ddl命令行工具
+# ddl工具与代码生成
 
 `go-doudou ddl`命令是表结构同步和生成单表dao层代码的命令行工具。其中表结构同步支持双向同步，即支持从go语言结构体创建和更新数据库表结构和从数据库表结构生成go语言结构体。
 
@@ -300,6 +300,23 @@ AfterDeleteManyHook(ctx context.Context, data interface{}, where query.Q, affect
 
 // 在 read many 操作中自动调用, 例如 SelectMany/CountMany/PageMany
 BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q)
+```
+
+`query.Q`是接口类型的参数，建议传入指针类型的实现类型，方便修改查询条件。
+
+示例代码：
+
+```go
+func (receiver UserDaoImpl) BeforeReadManyHook(ctx context.Context, page *query.Page, where ...query.Q) {
+	// implement your business logic
+	if len(where) > 0 {
+		if criteria, ok := where[0].(*query.Criteria); ok {
+			*criteria = criteria.Col("delete_at").IsNull()
+		} else if w, ok := where[0].(*query.Where); ok {
+			*w = w.And(query.C().Col("delete_at").IsNull())
+		}
+	}
+}
 ```
 
 ### 新增dao层代码
