@@ -637,3 +637,109 @@ GDD_NACOS_NOT_LOAD_CACHE_AT_START=true
 ```
 
 *注意：* 注册在nacos注册中心的非go-doudou框架开发的应用，如果有路由前缀，则必须将其设置到`metadata`里的`"rootPath"`属性，否则网关可能会报404。
+
+## 请求体和请求参数校验
+
+go-doudou 从v1.1.9版本起新增基于 [go-playground/validator](https://github.com/go-playground/validator) 的针对请求体和请求参数的校验机制。
+
+### 用法
+
+go-doudou 内建支持的请求校验机制如下：
+
+1. 接口定义时传入的指针类型的参数都是非必须参数，非指针类型的参数都是必须参数；
+2. 接口定义时可在方法入参的上方以go语言注释的形式，加上`@validate`注解，须遵循[接口定义-注解](./idl.html#注解)章节说明的注解语法和格式，传入具体的校验规则作为注解的参数；
+3. vo包里定义struct结构体时可以在属性的tag里加上`validate`标签，在后面写上具体的校验规则；
+
+以上第2点和第3点里提到的校验规则仅支持 `go-playground/validator` 库中的规则。go-doudou实际校验请求体和请求参数的代码都在go-doudou命令行工具生成的`handlerimpl.go`文件中，只有struct类型（包括struct指针类型）的参数底层通过 `func (v *Validate) Struct(s interface{}) error` 方法校验，其他类型的参数底层都通过 `func (v *Validate) Var(field interface{}, tag string) error` 方法校验。
+
+### 示例
+
+接口定义示例
+
+```go
+// <b style="color: red">NEW</b> 文章新建和更新接口
+// 传进来的参数里有id执行更新操作，没有id执行创建操作
+// @role(SUPER_ADMIN)
+Article(ctx context.Context, file *v3.FileModel,
+	// @validate(gt=0,lte=60)
+	title,
+	// @validate(gt=0,lte=1000)
+	content *string, tags *[]string, sort, status *int, id *int) (data string, err error)
+```
+
+vo包中的struct结构体示例
+
+```go
+type ArticleVo struct {
+	Id      int    `json:"id"`
+	Title   string `json:"title" validate:"required,gt=0,lte=60"`
+	Content string `json:"content"`
+	Link    string `json:"link" validate:"required,url"`
+	CreateAt string `json:"createAt"`
+	UpdateAt string `json:"updateAt"`
+}
+```
+
+生成的代码示例
+
+```go
+func (receiver *ArticleHandlerImpl) ArticleList(_writer http.ResponseWriter, _req *http.Request) {
+	var (
+		ctx     context.Context
+		payload vo.ArticlePageQuery
+		data    vo.ArticleRet
+		err     error
+	)
+	ctx = _req.Context()
+	if _req.Body == nil {
+		http.Error(_writer, "missing request body", http.StatusBadRequest)
+		return
+	} else {
+		if _err := json.NewDecoder(_req.Body).Decode(&payload); _err != nil {
+			http.Error(_writer, _err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			if _err := ddhttp.ValidateStruct(payload); _err != nil {
+				http.Error(_writer, _err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+	}
+	...
+}
+```
+
+```go
+func (receiver *ArticleHandlerImpl) Article(_writer http.ResponseWriter, _req *http.Request) {
+	var (
+		ctx    context.Context
+		file   *v3.FileModel
+		title  *string
+		content    *string
+		tags   *[]string
+		sort   *int
+		status *int
+		id     *int
+		data   string
+		err    error
+	)
+	...
+	if _, exists := _req.Form["title"]; exists {
+		_title := _req.FormValue("title")
+		title = &_title
+		if _err := ddhttp.ValidateVar(title, "gt=0,lte=60", "title"); _err != nil {
+			http.Error(_writer, _err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+	if _, exists := _req.Form["content"]; exists {
+		_content := _req.FormValue("content")
+		content = &_content
+		if _err := ddhttp.ValidateVar(content, "gt=0,lte=1000", "content"); _err != nil {
+			http.Error(_writer, _err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+	...
+}
+```
