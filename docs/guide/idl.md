@@ -118,7 +118,7 @@ go-doudou 从v1.1.7起新增对注解的支持。
 
 ### 定义方法
 
-定义格式：`@注解名称(参数1,参数2)`。
+定义格式：`@注解名称(参数1,参数2,参数3...)`。
 
 定义规则：
 1. 注解可以写在go语言文档注释中的任意位置，前后都可以有其他文字说明，且无需空格
@@ -255,8 +255,10 @@ type Usersvc interface {
 	// 演示如何定义post请求的，application/x-www-form-urlencoded类型的接口
 	PublicSignUp(ctx context.Context,
 		// username
+		// @validate(gt=0,lte=60)
 		username string,
 		// password
+		// @validate(gt=0,lte=60)
 		password string,
 		// image code, optional as it is pointer type
 		code *string,
