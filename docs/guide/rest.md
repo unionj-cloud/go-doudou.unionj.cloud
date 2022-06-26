@@ -652,6 +652,8 @@ go-doudou 内建支持的请求校验机制如下：
 
 以上第2点和第3点里提到的校验规则仅支持 `go-playground/validator` 库中的规则。go-doudou实际校验请求体和请求参数的代码都在go-doudou命令行工具生成的`handlerimpl.go`文件中，只有struct类型（包括struct指针类型）的参数底层通过 `func (v *Validate) Struct(s interface{}) error` 方法校验，其他类型的参数底层都通过 `func (v *Validate) Var(field interface{}, tag string) error` 方法校验。
 
+go-doudou 的`ddhttp`包通过导出函数 `func GetValidate() *validator.Validate` 对外提供了`*validator.Validate`类型的单例，开发者可以通过这个单例调用由`go-playground/validator`直接提供的api来实现更复杂的、自定义的需求，比如错误信息中文翻译、自定义校验规则等等，请参考`go-playground/validator`的[官方文档](https://pkg.go.dev/github.com/go-playground/validator/v10)和[官方示例](https://github.com/go-playground/validator/tree/master/_examples)。
+
 ### 示例
 
 接口定义示例
@@ -741,5 +743,31 @@ func (receiver *ArticleHandlerImpl) Article(_writer http.ResponseWriter, _req *h
 		}
 	}
 	...
+}
+```
+
+错误信息中文翻译示例
+
+```go
+package main
+
+import (
+	"github.com/go-playground/locales/zh"
+	ut "github.com/go-playground/universal-translator"
+	zhtrans "github.com/go-playground/validator/v10/translations/zh"
+	...
+)
+
+func main() {
+	...
+
+	uni := ut.New(zh.New())
+	trans, _ := uni.GetTranslator("zh")
+	ddhttp.SetTranslator(trans)
+	zhtrans.RegisterDefaultTranslations(ddhttp.GetValidate(), trans)
+
+	...
+
+	srv.Run()
 }
 ```
