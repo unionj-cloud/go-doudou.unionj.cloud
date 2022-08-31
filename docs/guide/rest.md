@@ -1,5 +1,62 @@
 # RESTful
 
+## 内置路由说明
+
+go-doudou框架内置了12个路由，方便服务开发者和调用者联调，服务开发者对服务的状态进行监控，以及对线上服务进行调优。
+
+```shell
+INFO[2022-08-31 18:32:41] | GetDoc                    | GET    | /go-doudou/doc             | 
+INFO[2022-08-31 18:32:41] | GetOpenAPI                | GET    | /go-doudou/openapi.json    | 
+INFO[2022-08-31 18:32:41] | Prometheus                | GET    | /go-doudou/prometheus      | 
+INFO[2022-08-31 18:32:41] | GetRegistry               | GET    | /go-doudou/registry        | 
+INFO[2022-08-31 18:32:41] | GetConfig                 | GET    | /go-doudou/config          | 
+INFO[2022-08-31 18:32:41] | GetStatsvizWs             | GET    | /go-doudou/statsviz/ws     | 
+INFO[2022-08-31 18:32:41] | GetStatsviz               | GET    | /go-doudou/statsviz/       | 
+INFO[2022-08-31 18:32:41] | GetDebugPprofCmdline      | GET    | /debug/pprof/cmdline       | 
+INFO[2022-08-31 18:32:41] | GetDebugPprofProfile      | GET    | /debug/pprof/profile       | 
+INFO[2022-08-31 18:32:41] | GetDebugPprofSymbol       | GET    | /debug/pprof/symbol        | 
+INFO[2022-08-31 18:32:41] | GetDebugPprofTrace        | GET    | /debug/pprof/trace         | 
+INFO[2022-08-31 18:32:41] | GetDebugPprofIndex        | GET    | /debug/pprof/              | 
+INFO[2022-08-31 18:32:41] +---------------------------+--------+----------------------------+ 
+INFO[2022-08-31 18:32:41] =================================================== 
+INFO[2022-08-31 18:32:41] Started in 2.668616ms                        
+INFO[2022-08-31 18:32:41] Http server is listening on :6066            
+```
+
+下面一一说明：
+
+- `/go-doudou/doc`：基于OpenAPI 3.0规范，采用vuejs+elementUI开发的在线接口文档。核心代码已开源，编译后可以单独使用，特别是可以用于其他框架和编程语言，仓库地址：[https://github.com/unionj-cloud/go-doudou-openapi-ui](https://github.com/unionj-cloud/go-doudou-openapi-ui)
+
+- `/go-doudou/openapi.json`：兼容OpenAPI 3.0规范的json文档，主要用于同样是支持OpenAPI 3.0的第三方代码生成工具生成代码，比如go-doudou作者开源的Nodejs开发的支持typescript的http请求客户端代码生成器pullcode，仓库地址：[https://github.com/wubin1989/pullcode](https://github.com/wubin1989/pullcode)
+
+- `/go-doudou/prometheus`：用于Prometheus爬取服务运行指标
+
+- `/go-doudou/registry`：用于展示memberlist集群的服务列表
+
+- `/go-doudou/config`：用于查看当前服务运行中生效的环境配置，可以加查询字符串参数`pre`，例如：`http://localhost:6066/go-doudou/config?pre=GDD_`，表示只显示以`GDD_`为前缀的环境变量
+
+- `/go-doudou/statsviz/ws`和`/go-doudou/statsviz/`：集成了可视化运行时统计指标的开源库[https://github.com/arl/statsviz](https://github.com/arl/statsviz)
+
+- `/debug/`为前缀的路由：集成了go语言内置的pprof工具，需要优化程序的时候可以用，有几种常用的用法附在下方，
+
+```shell
+go tool pprof -http :6068 http://admin:admin@localhost:6060/debug/pprof/profile\?seconds\=20
+```
+
+等待20秒以后，会自动打开浏览器，可以查看火焰图等。
+
+
+```shell
+curl -o trace.out http://qylz:1234@localhost:6060/debug/pprof/trace\?seconds\=20
+go tool trace trace.out
+```
+
+这两个命令执行完以后，会自动打开浏览器，你可以查看前20s的程序运行时的监控指标。
+
+另外需要说明的是：所有的内置路由都加了http basic auth校验，你可以分别通过环境变量 `GDD_MANAGE_USER` 和 `GDD_MANAGE_PASS`自定义配置用户名和密码，默认值都是`admin`。如果你采用了go-doudou支持的配置管理中心Nacos或者Apollo，可以在运行时动态修改，自动生效，无须重启服务。建议生产环境的服务的http basic用户名和密码隔段时间换一下，确保安全。
+
+
+
 ## 服务注册与发现
 
 Go-doudou支持两种服务注册与发现机制：`memberlist`和`nacos`
@@ -563,6 +620,81 @@ networks:
       driver: default
       config:
         - subnet: 172.28.0.0/16
+```
+
+在k8s部署grafana的yaml文件示例：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:8.4.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http-grafana
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /robots.txt
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 750Mi
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-pv
+      volumes:
+        - name: grafana-pv
+          persistentVolumeClaim:
+            claimName: grafana-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: http-grafana
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: LoadBalancer
 ```
 
 ### 截图
