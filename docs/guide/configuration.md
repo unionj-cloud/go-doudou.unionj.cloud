@@ -1,6 +1,6 @@
 # 配置
 
-Go-doudou提供了对dotenv格式和yaml格式的本地配置文件，以及阿里Nacos配置中心和携程Apollo配置中心的开箱支持，可以从本地配置文件或者远程配置中心加载配置到环境变量中。
+`go-doudou`提供了对dotenv格式和yaml格式的本地配置文件，以及阿里Nacos配置中心和携程Apollo配置中心的开箱支持，可以从本地配置文件或者远程配置中心加载配置到环境变量中。
 
 本地配置文件和远程配置中心的优先级是本地配置文件优先，即本地配置文件中已加载的配置不会被远程配置中心加载的配置覆盖。
 
@@ -44,7 +44,7 @@ dotenv格式和yaml格式的本地配置文件的使用方式是完全一样的�
 
 ## 远程配置方案
 
-Go-doudou内建支持两种远程配置中心方案：阿里的Nacos和携程的Apollo。支持在服务启动时加载，也支持自定义监听函数监听配置变化。
+`go-doudou`内建支持两种远程配置中心方案：阿里的Nacos和携程的Apollo。支持在服务启动时加载，也支持自定义监听函数监听配置变化。
 
 开启远程配置中心，需在本地配置文件中配置以下环境变量：
 
@@ -52,12 +52,12 @@ Go-doudou内建支持两种远程配置中心方案：阿里的Nacos和携程的
 
 :::tip
 
-Go-doudou框架层的配置（即以`GDD_`为前缀的配置）中有一部分 [服务配置](#服务配置) 和 [Memberlist配置](#memberlist配置) 支持通过远程配置中心在运行时动态修改，运行时动态修改的配置优先级最高，会将服务启动时从命令行终端、`Dockerfile`文件、k8s配置文件、本地配置文件和远程配置中心加载的配置都覆盖掉。
+`go-doudou`框架层的配置（即以`GDD_`为前缀的配置）中有一部分 [服务配置](#服务配置) 和 [Memberlist配置](#memberlist配置) 支持通过远程配置中心在运行时动态修改，运行时动态修改的配置优先级最高，会将服务启动时从命令行终端、`Dockerfile`文件、k8s配置文件、本地配置文件和远程配置中心加载的配置都覆盖掉。
 
 :::
 ### Nacos配置中心
 
-Go-doudou服务启动时会自动从Nacos加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+`go-doudou`服务启动时会自动从Nacos加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
 
 - `GDD_NACOS_NAMESPACE_ID`: Nacos namespaceId，非必须
 - `GDD_NACOS_SERVER_ADDR`: Nacos服务端连接地址，必须
@@ -89,7 +89,7 @@ func main() {
 
 ### Apollo配置中心
 
-Go-doudou服务启动时会自动从Apollo加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
+`go-doudou`服务启动时会自动从Apollo加载配置，只需要在本地配置文件里配置一些参数即可，可以说是开箱即用的。
 
 - `GDD_SERVICE_NAME`: 服务名称就是Apollo AppId
 - `GDD_APOLLO_CLUSTER`: Apollo cluster，默认值是`default`
@@ -152,7 +152,7 @@ if !c.SkippedFirstEvent {
 | 环境变量名       | 描述                                                                                                       | 默认值    | 是否必须   |
 | -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | -------|
 | GDD_BANNER                 | 是否开启banner                                                                                   | true       |        |
-| GDD_BANNER_TEXT            | banner文字                                                                                       | Go-doudou  |        |
+| GDD_BANNER_TEXT            | banner文字                                                                                       | `go-doudou`  |        |
 | GDD_LOG_LEVEL              | 日志等级，可选项：`panic`, `fatal`, `error`, `warn`, `warning`, `info`, `debug`, `trace`           | info       |        |
 | GDD_LOG_FORMAT             | 日志格式，可选项：`text`, `json`                                                                   | text       |        |
 | GDD_LOG_REQ_ENABLE         | 是否开启http请求体和响应体日志                                                                       | false      |        |
@@ -168,7 +168,7 @@ if !c.SkippedFirstEvent {
 | GDD_MANAGE_ENABLE          | 是否开启内建http接口：`/go-doudou/doc`, `/go-doudou/openapi.json`, `/go-doudou/prometheus`, `/go-doudou/registry`, `/go-doudou/config` | true       |        |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_USER            | 内建http接口的http basic校验用户名                                                                    | admin      |        |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_PASS            | 内建http接口的http basic校验密码                                                                      | admin      |        |
-| GDD_TRACING_METRICS_ROOT   | jaeger调用链监控的`metrics root`                                                                     | Go-doudou  |        |
+| GDD_TRACING_METRICS_ROOT   | jaeger调用链监控的`metrics root`                                                                     | `go-doudou`  |        |
 | GDD_WEIGHT                 | 服务实例的权重                                                                                       | 1          |        |
 | GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`memberlist`, `nacos`                                                           | memberlist |        |
 | GDD_ENABLE_RESPONSE_GZIP | 开启http响应体gzip压缩     | true |              |

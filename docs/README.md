@@ -21,7 +21,7 @@ features:
   - title: 服务治理
     details: 内置服务治理组件，支持客户端负载均衡、熔断限流、隔仓、超时、重试等等
   - title: 单体和微服务
-    details: 同时支持开发单体应用和微服务系统，给你充分的架构灵活性
+    details: 同时支持开发单体应用(rest)和微服务(grpc)，给你充分的架构灵活性
 footer: MIT Licensed | Copyright © 2022-present 版权属于全体go-doudou贡献者
 ---
 [蜀ICP备2022006047号](https://beian.miit.gov.cn/)

@@ -59,7 +59,7 @@ go tool trace trace.out
 
 ## 服务注册与发现
 
-Go-doudou支持两种服务注册与发现机制：`memberlist`和`nacos`
+`go-doudou`支持两种服务注册与发现机制：`memberlist`和`nacos`
 - `memberlist`: 基于[SWIM gossip protocol](https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf)，去中心化，点对点架构，无须leader选举，从[hashicorp/memberlist](https://github.com/hashicorp/memberlist)库fork出来并做了一些修改
 - [`nacos`](https://github.com/alibaba/nacos): 中心化的，leader-follower架构，出自阿里巴巴
 
@@ -101,7 +101,7 @@ GDD_SERVICE_DISCOVERY_MODE=memberlist # Optional
 
 ### Nacos
 
-Go-doudou内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。
+`go-doudou`内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。
 
 首先，给`main`函数加入如下代码
 
@@ -242,13 +242,13 @@ func main() {
 ## 限流
 ### 用法
 
-Go-doudou内置了基于[golang.org/x/time/rate](https://pkg.go.dev/golang.org/x/time/rate)实现的令牌桶算法的内存限流器。
+`go-doudou`内置了基于[golang.org/x/time/rate](https://pkg.go.dev/golang.org/x/time/rate)实现的令牌桶算法的内存限流器。
 
 在`github.com/unionj-cloud/go-doudou/framework/ratelimit/memrate`包里有一个`MemoryStore`结构体，存储了key和`Limiter`实例对。`Limiter`实例是限流器实例，key是该限流器实例的键。
 
 你可以往`memrate.NewLimiter`工厂函数传入一个可选函数`memrate.WithTimer`，设置当key空闲时间超过`timeout`以后的回调函数，比如可以从`MemoryStore`实例里将该key删除，以释放内存资源。
 
-Go-doudou还提供了基于 [go-redis/redis_rate](https://github.com/go-redis/redis_rate) 库封装的GCRA限流算法的redis限流器。该限流器支持跨实例的全局限流。
+`go-doudou`还提供了基于 [go-redis/redis_rate](https://github.com/go-redis/redis_rate) 库封装的GCRA限流算法的redis限流器。该限流器支持跨实例的全局限流。
 
 ### 内存限流器示例
 
@@ -341,7 +341,7 @@ func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http
 ## 隔仓
 ### 用法
 
-Go-doudou在`github.com/unionj-cloud/go-doudou/framework/http`包中内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
+`go-doudou`在`github.com/unionj-cloud/go-doudou/framework/http`包中内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
 
 ```go
 http.BulkHead(3, 10*time.Millisecond)
@@ -379,7 +379,7 @@ func main() {
 
 ### 用法
 
-Go-doudou在生成的客户端代码里内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的熔断/超时/重试等弹性机制的代码。你只需要执行如下命令，生成客户端代码拿来用即可
+`go-doudou`在生成的客户端代码里内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的熔断/超时/重试等弹性机制的代码。你只需要执行如下命令，生成客户端代码拿来用即可
 
 ```shell
 go-doudou svc http --handler -c --doc
@@ -429,7 +429,7 @@ func main() {
 
 ### 用法
 
-Go-doudou在`github.com/unionj-cloud/go-doudou/framework/logger`包里内置了一个全局的`logrus.Entry`。如果`GDD_ENV`环境变量不等于空字符串和`dev`，则会带上一些关于服务本身的元数据。
+`go-doudou`在`github.com/unionj-cloud/go-doudou/framework/logger`包里内置了一个全局的`logrus.Entry`。如果`GDD_ENV`环境变量不等于空字符串和`dev`，则会带上一些关于服务本身的元数据。
 
 `logger`包提供一些包级的函数，可以直接替换如`logrus.Info()`这样的代码为`logger.Info()`。你也可以调用`Init`函数自定义`logrus.Logger`实例。
 

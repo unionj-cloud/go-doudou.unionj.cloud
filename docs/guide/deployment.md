@@ -61,7 +61,7 @@ docker run -it -d -p 6060:6060 myservice
 
 ### Kubernetes
 
-Go-doudou开箱支持k8s部署。
+`go-doudou`开箱支持k8s部署。
 
 1. 执行`go-doudou svc push`命令可以打包镜像并推送到远程镜像仓库，最后生成两份k8s部署文件，一个用于部署无状态服务，一个用于部署有状态服务。
 

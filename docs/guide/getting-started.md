@@ -6,7 +6,47 @@
 - 如果Go版本高于1.16，支持
 - 如果Go版本低于1.15，从v1.0.3开始不再支持
 
-## 安装
+## 安装grpc编译器和插件
+
+### 安装编译器
+
+安装Protobuf编译器protoc，可参考[官方文档](https://grpc.io/docs/protoc-installation/)，这里贴一下常见操作系统下的安装命令：
+
+- Ubuntu系统:
+
+```shell
+$ apt install -y protobuf-compiler
+$ protoc --version  # 确保安装v3及以上版本
+```
+
+- Mac系统，需要先安装[Homebrew](https://brew.sh/):
+
+```shell
+$ brew install protobuf
+$ protoc --version  # 确保安装v3及以上版本
+```
+
+- Windows系统，或者Mac系统安装Homebrew失败，需从github下载安装包，解压后，自行配置环境变量。  
+  Windows系统最新protoc下载地址：[https://github.com/protocolbuffers/protobuf/releases/download/v21.7/protoc-21.7-win64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.7/protoc-21.7-win64.zip)
+	Mac系统Intel最新protoc下载地址：[https://github.com/protocolbuffers/protobuf/releases/download/v21.7/protoc-21.7-osx-x86_64.zip](https://github.com/protocolbuffers/protobuf/releases/download/v21.7/protoc-21.7-osx-x86_64.zip)  
+	其他安装包请在[github releases](https://github.com/protocolbuffers/protobuf/releases)里找。
+
+### 安装插件 
+
+1. 安装插件:
+
+```shell
+$ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+$ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+```
+
+2. 配置环境变量:
+
+```shell
+$ export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+## 安装go-doudou
 - 如果Go版本低于1.17
 ```shell
 go get -v github.com/unionj-cloud/go-doudou@v1.1.9
@@ -319,6 +359,8 @@ func NewHelloworld(conf *config.Config) Helloworld {
 我们删掉了第15~19行的代码，替换成了`return fmt.Sprintf("Hello %s", greeting), nil`。我们再测一下效果。
 ![greeting1](/images/greeting1.png)
 用go-doudou写RESTful接口是不是非常简单！
+
+### Grpc微服务
 
 ### K8S部署
 有很多种部署go语言的http服务的方案。我们这里将`helloworld`服务部署到k8s上。请参考[Deployment](./deployment.md) 章节来了解更多。

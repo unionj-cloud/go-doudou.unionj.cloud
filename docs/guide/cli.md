@@ -1,6 +1,6 @@
 # 命令行工具
 
-Go-doudou内置了基于命令行终端的代码生成器。`go-doudou`是根命令，有两个参数。
+`go-doudou`内置了基于命令行终端的代码生成器。`go-doudou`是根命令，有两个参数。
 
 - `-v` 打印当前安装的go-doudou命令行工具的版本
 
@@ -38,7 +38,7 @@ Flags:
 Use "go-doudou [command] --help" for more information about a command.
 ```
 
-Go-doudou还提供了若干子命令来加速整个开发流程。我们挨个看一下。
+`go-doudou`还提供了若干子命令来加速整个开发流程。我们挨个看一下。
 
 ## version
 
