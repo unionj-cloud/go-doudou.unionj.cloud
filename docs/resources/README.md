@@ -28,3 +28,5 @@ sidebar: auto
     - ddldemo: 演示如何使用go-doudou内置ddl工具的应用
     - enumdemo: 演示如何使用go-doudou枚举类型
     - annotation: 演示如何使用go-doudou注解特性
+    - grpcdemo: 演示如果使用go-doudou开发grpc服务
+    - grpc3: 演示无RESTful只有grpc服务的应用
