@@ -164,6 +164,7 @@ if !c.SkippedFirstEvent {
 | GDD_SERVICE_NAME           | 服务名                                                                                            |            | 必须    |
 | GDD_HOST                   | http服务器监听地址                                                                                  |            |        |
 | GDD_PORT                   | http服务器监听端口                                                                                  | 6060       |        |
+| GDD_GRPC_PORT              | grpc服务器监听端口                                                                                  | 50051       |        |
 | GDD_RETRY_COUNT            | 客户端请求重试次数                                                                                   | 0          |        |
 | GDD_MANAGE_ENABLE          | 是否开启内建http接口：`/go-doudou/doc`, `/go-doudou/openapi.json`, `/go-doudou/prometheus`, `/go-doudou/registry`, `/go-doudou/config` | true       |        |
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_USER            | 内建http接口的http basic校验用户名                                                                    | admin      |        |
