@@ -31,14 +31,14 @@ export default defineUserConfig<DefaultThemeOptions>({
     `
   ],
   ['meta', { name: 'keywords', content: 'go-doudou,Go语言微服务框架,golang,go-doudou微服务框架,RESTful,微服务,服务注册与发现,负载均衡,熔断限流,grpc,去中心化,golang microservice framework,golang orm,ORM工具,microservice,service discovery,load balancing,circuit breaker,rate limit,低代码平台' }],
-  ['meta', { name: 'description', content: 'go-doudou是一个轻量级的go语言微服务开发框架。它同时支持开发单体应用。从定义Go语言接口开始，无须学习任何接口描述语言。内置基于SWIM gossip协议的服务注册与发现的机制，帮助你构建一个健壮的、可扩展的、去中心化的微服务集群。内置强大的代码生成器。' }]
+  ['meta', { name: 'description', content: 'go-doudou是一个go语言微服务框架。它同时支持开发单体应用。从定义Go语言接口开始，无须学习任何接口描述语言。内置基于SWIM gossip协议的服务注册与发现的机制，帮助你构建一个健壮的、可扩展的、去中心化的微服务集群。内置强大的代码生成器。' }]
 ],
 
   locales: {
     "/": {
       lang: "zh-CN",
       title: "go-doudou",
-      description: "Go语言微服务开发框架(REST/GRPC)",
+      description: "Go语言微服务框架(REST/GRPC)",
     },
   },
 
