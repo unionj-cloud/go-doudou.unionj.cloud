@@ -1,6 +1,6 @@
 # 代码生成规则
 
-除了理解`go-doudou`命令行工具的用法，你还需要了解代码生成规则。我将规则分成了三类：“增量生成”，“覆盖生成”和“跳过”。
+除了理解`go-doudou`命令行工具的用法，你还需要了解代码生成规则。我将规则分成了三类：“增量生成”，“覆盖生成”，“局部修改”和“跳过”。
 
 ## 增量生成
 
@@ -21,6 +21,18 @@
 - `${service}_openapi3.go`: 每次执行带上`--doc`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
 - `${service}_openapi3.json`: 每次执行带上`--doc`参数的`go-doudou svc http`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
+
+- `transport/grpc/${service}.pb.go`: 每次执行`go-doudou svc grpc`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
+
+- `transport/grpc/${service}.proto`: 每次执行`go-doudou svc grpc`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
+
+- `transport/grpc/${service}_grpc.pb.go`: 每次执行`go-doudou svc grpc`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
+
+## 局部修改
+
+- `${service}_deployment.yaml`: 每次执行`go-doudou svc push`命令，会更新`image`属性的值，即更新镜像名
+
+- `${service}_statefulset.yaml`: 每次执行`go-doudou svc push`命令，会更新`image`属性的值，即更新镜像名
 
 ## 跳过
 

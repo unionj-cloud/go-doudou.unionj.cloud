@@ -11,6 +11,7 @@ export const zh: SidebarConfig = {
         '/guide/cli.md',
         '/guide/generation.md',
         '/guide/rest.md',
+        '/guide/grpc.md',
         '/guide/configuration.md',
         '/guide/deployment.md',
       ],

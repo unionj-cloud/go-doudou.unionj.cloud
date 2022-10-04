@@ -1,6 +1,6 @@
 ---
 home: true
-title: go-doudou Go语言微服务快速开发框架 快速打造微服务系统
+title: go-doudou Go语言微服务框架 快速打造微服务系统
 heroImage: /hero.png
 actions:
   - text: 快速开始

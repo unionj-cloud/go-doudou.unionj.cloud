@@ -139,7 +139,7 @@ Installed version is v1.3.3
 ## 用法
 
 ```shell
-➜  ~ go-doudou -h                            
+➜  ~ go-doudou -h                                 
 go-doudou works like a scaffolding tool but more than that. 
 it lets api providers design their apis and help them code less. 
 it generates openapi 3.0 spec json document for frontend developers or other api consumers to understand what apis there, 
@@ -154,14 +154,15 @@ Usage:
 Available Commands:
   ddl         migration tool between database table structure and golang struct
   help        Help about any command
-  name        bulk add or update struct fields json tag
+  name        bulk add or update json tag of struct fields
   svc         generate or update service
+  version     Print the version number of go-doudou
 
 Flags:
   -h, --help      help for go-doudou
   -v, --version   version for go-doudou
 
-Use "go-doudou [command] --help" for more information about a command.  
+Use "go-doudou [command] --help" for more information about a command.
 ```
 
 ## Hello World
