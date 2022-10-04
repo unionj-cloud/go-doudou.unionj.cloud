@@ -15,7 +15,7 @@ sidebar: auto
 - 本地安装最新版go-doudou CLI
 
 ```go
-go install -v github.com/unionj-cloud/go-doudou@v1.1.9
+go install -v github.com/unionj-cloud/go-doudou@v1.3.3
 ```
 
 - 本地安装postman，用于测试接口：[https://www.postman.com/](https://www.postman.com/)

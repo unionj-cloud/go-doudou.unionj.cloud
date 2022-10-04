@@ -21,7 +21,7 @@
 - 契约精神: 我们建议采用`OpenAPI 3.0`和`Protobuf v3`接口描述规范来作为服务端和客户端开发团队沟通和协作开发的桥梁
 
 ### 特性
-- 低代码: 通过Go语言标准库中的[`ast`](https://pkg.go.dev/go/ast)包和[`parser`](https://pkg.go.dev/go/parser)包解析你定义的Go语言`interface`的代码，进而生成`main`方法、路由和`http handler`代码、包含生成假数据响应体逻辑的接口实现类代码、Go语言http请求客户端代码、`json`格式的`OpenAPI 3.0`接口文档以及用于生成grpc代码的proto文件等等
+- 低代码: 通过Go语言标准库中的[`ast`](https://pkg.go.dev/go/ast)包和[`parser`](https://pkg.go.dev/go/parser)包解析你定义的Go语言`interface`的代码，进而生成`main`函数、路由和`http handler`代码、包含生成假数据响应体逻辑的接口实现类代码、Go语言http请求客户端代码、`json`格式的`OpenAPI 3.0`接口文档以及用于生成grpc代码的proto文件等等
 - 支持用DNS地址作为服务注册与发现的地址
 - 同时支持单体应用和微服务系统开发
 - 内置轻量级orm库和表结构同步工具

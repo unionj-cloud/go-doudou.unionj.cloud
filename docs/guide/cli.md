@@ -6,7 +6,7 @@
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou -v     
-go-doudou version v1.1.9
+go-doudou version v1.3.3
 ```
 
 - `-h` 打印帮助信息。下文介绍的所有的子命令都有这个参数，就不再介绍了。
@@ -46,8 +46,8 @@ Use "go-doudou [command] --help" for more information about a command.
 
 ```shell
 ➜  go-doudou.github.io git:(dev) ✗ go-doudou version
-Installed version is v0.9.8
-Latest release version is v1.1.9
+Installed version is v1.1.9
+Latest release version is v1.3.3
 Use the arrow keys to navigate: ↓ ↑ → ← 
 ? Do you want to upgrade?: 
   ▸ Yes
