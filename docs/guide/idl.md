@@ -16,7 +16,7 @@
 4. 作为特例，你可以用`v3.FileModel`类型作为入参来上传文件，用`*os.File`类型作为出参来下载文件。
 5. 不支持别名类型作为结构体的字段。
 6. 不支持函数类型、通道类型和匿名结构体类型作为方法签名的入参和出参。
-7. 只内建支持对必传参数的校验，没有对结构体字段的校验，需要自己实现。`go-doudou`将指针类型的入参视为非必传，非指针类型的入参都视为必传。
+7. `go-doudou`将指针类型的入参视为非必传，非指针类型的入参都视为必传。
 8. 对于`OpenAPI 3.0`的接口文档生成：
 	- 不支持请求头和响应头，全局参数以及权限校验。你可以把这些内容作为Go语言注释，写在接口声明的上方或者接口方法签名的上方，这些注释会作为`description`的值生成到接口文档里，然后显示在在线接口文档页面的相应位置。
 	- 不支持[Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). 你可能并不会用到这些API，但我需要在这里提一下。
@@ -215,6 +215,13 @@ func Auth(client authClient.IAuthClient) func(inner http.Handler) http.Handler {
 }
 ```
 
+## gRPC
+
+上文介绍的所有规则都适用于定义gRPC服务。此外还有两点说明：
+
+- 暂不支持`Protobuf v3`的`oneof`
+- 定义stream类型的入参和出参时，参数名称必须以`stream`作为前缀，例如：`stream1`，`stream2`，`streamReq`，`streamResp`等等都可以
+
 ## 更多示例
 ```go
 package service
@@ -293,5 +300,14 @@ type Usersvc interface {
 		userId int) (
 		// avatar file
 		data *os.File, err error)
+
+	// BiStream 演示如何定义双向流RPC
+	BiStream(ctx context.Context, stream vo.Order) (stream1 vo.Page, err error)
+
+	// ClientStream 演示如何定义客户端流RPC
+	ClientStream(ctx context.Context, stream vo.Order) (data vo.Page, err error)
+
+	// ServerStream 演示如何定义服务端流RPC
+	ServerStream(ctx context.Context, payload vo.Order) (stream vo.Page, err error)
 }
 ```
