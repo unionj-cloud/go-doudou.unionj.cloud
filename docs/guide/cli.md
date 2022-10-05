@@ -161,7 +161,7 @@ ERRO[2022-02-18 11:56:09] 200 response definition not found in api Delete /store
 ```
 :::
 
-### gRPC
+### grpc
 
 `go-doudou svc grpc` 用于在`transport/grpc`路径下生成`Protobuf v3`语法的`.proto`后缀文件，gRPC服务端和客户端打桩代码等。如果`svcimpl.go`文件不存在，还会生成该文件，如果已存在，则会增量更新该文件。如果`cmd`路径下不存在`main.go`文件，则会生成该文件，如果已存在，则跳过。生成的`main.go`文件里已经有了启动gRPC服务的相关代码。
 
