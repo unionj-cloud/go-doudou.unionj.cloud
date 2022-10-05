@@ -38,7 +38,7 @@ export default defineUserConfig<DefaultThemeOptions>({
     "/": {
       lang: "zh-CN",
       title: "go-doudou",
-      description: "Go语言微服务框架(REST/GRPC)",
+      description: "Go语言微服务框架(REST/gRPC)",
     },
   },
 

@@ -6,7 +6,7 @@
 - 如果Go版本高于1.16，支持
 - 如果Go版本低于1.15，从v1.0.3开始不再支持
 
-## 安装grpc编译器和插件
+## 安装gRPC编译器和插件
 
 ### 安装编译器protoc
 
@@ -381,9 +381,9 @@ func NewHelloworld(conf *config.Config) Helloworld {
 ![greeting1](/images/greeting1.png)
 用go-doudou写RESTful接口是不是非常简单！
 
-### Grpc服务
+### gRPC服务
 
-下面我们来给项目加上grpc服务。Grpc是go生态中最流行的rpc技术解决方案。简单来说，grpc是采用`http2`作为网络协议加`protobuf`作为消息体序列化方案的rpc技术。开发grpc服务的一般流程大概是以下几步：
+下面我们来给项目加上gRPC服务。gRPC是go生态中最流行的rpc框架。gRPC采用`http2`作为网络协议加`protobuf`作为消息体序列化方案。开发gRPC服务的一般流程大概是以下几步：
 
 1. 先按照`protobuf`的语法在`.proto`后缀的文件里定义`message`和`service`
 2. 再执行类似`protoc --proto_path=. --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative transport/grpc/helloworld.proto`这样的命令生成服务端和客户端打桩代码
@@ -397,11 +397,11 @@ pb.RegisterHelloworldServiceServer(grpcServer, svc)
 grpcServer.Serve(lis)
 ```
 
-这样的代码来启动grpc服务。
+这样的代码来启动gRPC服务。
 
-如果采用`go-doudou`作为开发框架来开发grpc服务的话，会简单很多。以上文的`Helloworld`项目为例，只需两步：
+如果采用`go-doudou`作为开发框架来开发gRPC服务的话，会简单很多。以上文的`Helloworld`项目为例，只需两步：
 
-#### 生成grpc代码
+#### 生成gRPC代码
 
 在项目根路径下执行命令`go-doudou svc grpc`，该命令直接为我们生成了`.proto`后缀的文件，服务端和客户端打桩代码，以及`svcimpl.go`文件里的`pb.HelloworldServiceServer`接口的实现方法，只等我们在生成的方法里实现具体的业务逻辑即可。 
 
@@ -585,17 +585,17 @@ func main() {
 2022-10-04 20:52:40 INF Grpc server started in 8.11024ms
 ```
 
-日志输出有点乱，是因为grpc服务和RESTful服务分别在不同的goroutine中运行。如果只启动grpc服务的话，日志输出会更清晰。  
+日志输出有点乱，是因为gRPC服务和RESTful服务分别在不同的goroutine中运行。如果只启动gRPC服务的话，日志输出会更清晰。  
 
-当我们看到`Grpc server is listening at [::]:50051`就说明grpc服务启动成功了。
+当我们看到`Grpc server is listening at [::]:50051`就说明gRPC服务启动成功了。
 
-### 测试Grpc
+### 测试gRPC
 
-可以用postman测试grpc服务，但这里不打算详细介绍了。
+可以用postman测试gRPC服务，但这里不打算详细介绍了。
 
 ![postmangrpc](/images/postmangrpc.jpeg)
 
-这里采用知名grpc客户端工具`evans`来测试。详细介绍请跳转[https://github.com/ktr0731/evans](https://github.com/ktr0731/evans)。
+这里采用知名gRPC客户端工具`evans`来测试。详细介绍请跳转[https://github.com/ktr0731/evans](https://github.com/ktr0731/evans)。
 
 请阅读代码中的注释说明，了解用法。
 
@@ -636,9 +636,9 @@ helloworld.HelloworldService@127.0.0.1:50051> exit
 Good Bye :)
 ```
 
-我们输入"Jack"后，输出了"Hello Jack"，证明grpc服务可以跑通。
+我们输入"Jack"后，输出了"Hello Jack"，证明gRPC服务可以跑通。
 
-我们可以看到grpc服务所在的命令行终端的标签页中也输出了一行日志：
+我们可以看到gRPC服务所在的命令行终端的标签页中也输出了一行日志：
 
 ```shell
 2022-10-04 21:31:03 INF finished server unary call grpc.code=OK grpc.method=GreetingRpc grpc.method_type=unary grpc.service=helloworld.HelloworldService grpc.start_time=2022-10-04T21:31:03+08:00 grpc.time_ms=0.031 kind=server peer.address=127.0.0.1:53737 system=grpc

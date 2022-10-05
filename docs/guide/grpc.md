@@ -1,4 +1,4 @@
-# Grpc
+# gRPC
 
 请参考[快速开始](./getting-started.md)
 
