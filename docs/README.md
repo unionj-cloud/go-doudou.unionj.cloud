@@ -13,7 +13,7 @@ features:
   - title: 上手简单
     details: 从定义Go语言接口开始，无须学习任何接口描述语言，如OpenAPI和Protobuf等
   - title: 高性能
-    details: 采用HttpRouter（也是gin等知名框架的底层依赖）作为http请求路由库开发REST服务，采用gRPC作为底层RPC框架开发微服务
+    details: 采用高性能router作为http请求路由库开发REST服务，采用gRPC作为底层RPC框架开发微服务
   - title: 稳定健壮
     details: 代码质量可靠，仍在持续优化迭代，已经过线上生产实践的充分检验
   - title: 低代码
