@@ -1,26 +1,25 @@
-# RESTful
+# REST
 
 ## 内置路由说明
 
 go-doudou框架内置了12个路由，方便服务开发者和调用者联调，服务开发者对服务的状态进行监控，以及对线上服务进行调优。
 
 ```shell
-INFO[2022-08-31 18:32:41] | GetDoc                    | GET    | /go-doudou/doc             | 
-INFO[2022-08-31 18:32:41] | GetOpenAPI                | GET    | /go-doudou/openapi.json    | 
-INFO[2022-08-31 18:32:41] | Prometheus                | GET    | /go-doudou/prometheus      | 
-INFO[2022-08-31 18:32:41] | GetRegistry               | GET    | /go-doudou/registry        | 
-INFO[2022-08-31 18:32:41] | GetConfig                 | GET    | /go-doudou/config          | 
-INFO[2022-08-31 18:32:41] | GetStatsvizWs             | GET    | /go-doudou/statsviz/ws     | 
-INFO[2022-08-31 18:32:41] | GetStatsviz               | GET    | /go-doudou/statsviz/       | 
-INFO[2022-08-31 18:32:41] | GetDebugPprofCmdline      | GET    | /debug/pprof/cmdline       | 
-INFO[2022-08-31 18:32:41] | GetDebugPprofProfile      | GET    | /debug/pprof/profile       | 
-INFO[2022-08-31 18:32:41] | GetDebugPprofSymbol       | GET    | /debug/pprof/symbol        | 
-INFO[2022-08-31 18:32:41] | GetDebugPprofTrace        | GET    | /debug/pprof/trace         | 
-INFO[2022-08-31 18:32:41] | GetDebugPprofIndex        | GET    | /debug/pprof/              | 
-INFO[2022-08-31 18:32:41] +---------------------------+--------+----------------------------+ 
-INFO[2022-08-31 18:32:41] =================================================== 
-INFO[2022-08-31 18:32:41] Started in 2.668616ms                        
-INFO[2022-08-31 18:32:41] Http server is listening on :6066            
+2022-11-07 23:11:43 INF | GetDoc               | GET    | /go-doudou/doc          |
+2022-11-07 23:11:43 INF | GetOpenAPI           | GET    | /go-doudou/openapi.json |
+2022-11-07 23:11:43 INF | Prometheus           | GET    | /go-doudou/prometheus   |
+2022-11-07 23:11:43 INF | GetConfig            | GET    | /go-doudou/config       |
+2022-11-07 23:11:43 INF | GetStatsvizWs        | GET    | /go-doudou/statsviz/ws  |
+2022-11-07 23:11:43 INF | GetStatsviz          | GET    | /go-doudou/statsviz/*   |
+2022-11-07 23:11:43 INF | GetDebugPprofCmdline | GET    | /debug/pprof/cmdline    |
+2022-11-07 23:11:43 INF | GetDebugPprofProfile | GET    | /debug/pprof/profile    |
+2022-11-07 23:11:43 INF | GetDebugPprofSymbol  | GET    | /debug/pprof/symbol     |
+2022-11-07 23:11:43 INF | GetDebugPprofTrace   | GET    | /debug/pprof/trace      |
+2022-11-07 23:11:43 INF | GetDebugPprofIndex   | GET    | /debug/pprof/*          |
+2022-11-07 23:11:43 INF +----------------------+--------+-------------------------+
+2022-11-07 23:11:43 INF ===================================================
+2022-11-07 23:11:43 INF Http server is listening at :6060
+2022-11-07 23:11:43 INF Http server started in 1.676754ms      
 ```
 
 下面一一说明：
@@ -31,11 +30,9 @@ INFO[2022-08-31 18:32:41] Http server is listening on :6066
 
 - `/go-doudou/prometheus`：用于Prometheus爬取服务运行指标
 
-- `/go-doudou/registry`：用于展示memberlist集群的服务列表
-
 - `/go-doudou/config`：用于查看当前服务运行中生效的环境配置，可以加查询字符串参数`pre`，例如：`http://localhost:6066/go-doudou/config?pre=GDD_`，表示只显示以`GDD_`为前缀的环境变量
 
-- `/go-doudou/statsviz/ws`和`/go-doudou/statsviz/`：集成了可视化运行时统计指标的开源库[https://github.com/arl/statsviz](https://github.com/arl/statsviz)
+- `/go-doudou/statsviz/ws`和`/go-doudou/statsviz/*`：集成了可视化运行时统计指标的开源库[https://github.com/arl/statsviz](https://github.com/arl/statsviz)
 
 - `/debug/`为前缀的路由：集成了go语言内置的pprof工具，需要优化程序的时候可以用，有几种常用的用法附在下方，
 
@@ -59,63 +56,33 @@ go tool trace trace.out
 
 ## 服务注册与发现
 
-`go-doudou`支持两种服务注册与发现机制：`memberlist`和`nacos`
-- `memberlist`: 基于[SWIM gossip protocol](https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf)，去中心化，点对点架构，无须leader选举，从[hashicorp/memberlist](https://github.com/hashicorp/memberlist)库fork出来并做了一些修改
-- [`nacos`](https://github.com/alibaba/nacos): 中心化的，leader-follower架构，出自阿里巴巴
+`go-doudou`支持两种服务注册与发现机制：`etcd`和`nacos`
 
 ::: tip
-`memberlist`和`nacos`两种机制可以在一个服务中同时使用
+`etcd`和`nacos`两种机制可以在一个服务中同时使用
 
 ```shell
-GDD_SERVICE_DISCOVERY_MODE=memberlist,nacos
+GDD_SERVICE_DISCOVERY_MODE=etcd,nacos
 ```
 :::
 
-### Memberlist
+### Etcd
 
-首先，给`main`函数加入如下代码
-
-```go
-err := registry.NewNode()
-if err != nil {
-    logrus.Panic(fmt.Sprintf("%+v", err))
-}
-defer registry.Shutdown()
-```  
-
-其次，配置如下环境变量
+`go-doudou`从v2版本起内建支持使用etcd作为注册中心，实现服务注册与发现。需配置如下环境变量:  
 
 - `GDD_SERVICE_NAME`: 服务名称，必须
-- `GDD_MEM_SEED`: 种子节点连接地址，多个地址用英文逗号隔开
-- `GDD_MEM_PORT`: 监听端口，默认监听`7946`端口
-- `GDD_MEM_HOST`: 对外发布的连接地址，默认是私有IP
-- `GDD_SERVICE_DISCOVERY_MODE`: 可以不用配置，默认值就是`memberlist`
+- `GDD_SERVICE_DISCOVERY_MODE`: 服务注册与发现机制名称，`etcd`，必须
+- `GDD_ETCD_ENDPOINTS`: etcd连接地址，必须
 
 ```shell
-GDD_SERVICE_NAME=test-svc # Required
-GDD_MEM_SEED=localhost:7946  # Required
-GDD_MEM_PORT=56199 # Optional
-GDD_MEM_HOST=localhost # Optional
-GDD_SERVICE_DISCOVERY_MODE=memberlist # Optional
+GDD_SERVICE_NAME=grpcdemo-server
+GDD_SERVICE_DISCOVERY_MODE=etcd
+GDD_ETCD_ENDPOINTS=localhost:2379
 ```
 
 ### Nacos
 
-`go-doudou`内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。
-
-首先，给`main`函数加入如下代码
-
-```go
-err := registry.NewNode()
-if err != nil {
-    logrus.Panic(fmt.Sprintf("%+v", err))
-}
-defer registry.Shutdown()
-```  
-
-没错，跟`memberlist`机制所需添加的代码完全相同。
-
-其次，配置如下环境变量
+`go-doudou`内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。需配置如下环境变量:
 
 - `GDD_SERVICE_NAME`: 服务名称，必须
 - `GDD_NACOS_SERVER_ADDR`: Nacos服务端地址
@@ -129,7 +96,7 @@ GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 
 ## 客户端负载均衡
 
-### 简单轮询负载均衡 (memberlist用)
+### 简单轮询负载均衡 (Etcd用)
 
 ```go
 func main() {
@@ -159,7 +126,7 @@ func main() {
 }
 ```
 
-### 平滑加权轮询负载均衡 (memberlist用)
+### 平滑加权轮询负载均衡 (Etcd用)
 
 如果环境变量`GDD_WEIGHT`和`GDD_MEM_WEIGHT`都没有设置，默认权重是1。如果设置权重为0， 且`GDD_MEM_WEIGHT_INTERVAL`环境变量大于`0s`，则开启权重自适应计算功能，即每隔`GDD_MEM_WEIGHT_INTERVAL`设置的间隔时间根据节点的健康值和CPU空闲比例计算权重，并发送给其他节点。
 

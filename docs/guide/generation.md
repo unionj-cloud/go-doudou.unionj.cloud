@@ -28,6 +28,8 @@
 
 - `transport/grpc/${service}_grpc.pb.go`: 每次执行`go-doudou svc grpc`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
 
+- `transport/grpc/annotation.go`: 每次执行`go-doudou svc grpc`命令，会重新生成代码，所以请不要人工修改此文件，所有人工修改或编写的代码都会丢失。
+
 ## 局部修改
 
 - `${service}_deployment.yaml`: 每次执行`go-doudou svc push`命令，会更新`image`属性的值，即更新镜像名

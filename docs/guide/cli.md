@@ -85,18 +85,14 @@ go-doudou svc init helloworld -m github.com/unionj-cloud/helloworld
 
 `go-doudou svc http` 用于生成RESTful接口的http路由和handler代码
 ```shell
-go-doudou svc http --handler -c --doc
+go-doudou svc http -c
 ```
 
 #### 参数
 
 有一些参数可以配置代码生成器的行为。下面我们一一介绍一下：
 
-- `--handler`: `bool`类型。如果设置了这个参数，`go-doudou`会生成默认的`http.Handler`接口实现，解析请求参数到表单对象、解析请求体到结构体对象以及返回响应体。
-
 - `-c` or `--client`: `bool` 类型。用于设置是否生成封装了[go-resty](https://github.com/go-resty/resty) 的http请求客户端代码。
-
-- `--doc`: `bool` type. It is used for generating [OpenAPI 3.0](https://spec.openapis.org/oas/v3.0.3) description file in json format.
 
 - `-e` or `--env`: `string` 类型。用于设置写进http请求客户端代码里的服务端baseUrl的环境变量名。如果没有指定，默认采用`svc.go`文件里的字母大写的服务接口名。
 
@@ -111,7 +107,7 @@ func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
 }
 ```
 
-上面代码的第2行，`HELLOWORLD`就是默认名称。如前文所述，go-doudou同时支持开发单体应用。如果你不需要客户端程序加入go-doudou微服务集群，享受开箱即用的服务发现和客户端负载均衡机制，你可以直接在配置文件中将`HELLOWORLD`环境变量设置为服务端可以直连的请求地址。我们来执行一下命令`go-doudou svc http --handler -c --doc -e godoudou_helloworld`，看一下有什么变化。
+上面代码的第2行，`HELLOWORLD`就是默认名称。如前文所述，go-doudou同时支持开发单体应用。如果你不需要客户端程序加入go-doudou微服务集群，享受开箱即用的服务发现和客户端负载均衡机制，你可以直接在配置文件中将`HELLOWORLD`环境变量设置为服务端可以直连的请求地址。我们来执行一下命令`go-doudou svc http -c -e godoudou_helloworld`，看一下有什么变化。
 
 ```go
 func NewHelloworldClient(opts ...ddhttp.DdClientOption) *HelloworldClient {
