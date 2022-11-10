@@ -56,7 +56,7 @@ go tool trace trace.out
 
 ## 服务注册与发现
 
-`go-doudou`支持两种服务注册与发现机制：`etcd`和`nacos`
+`go-doudou`支持两种服务注册与发现机制：`etcd`和`nacos`。REST服务注册在注册中心的服务名称会自动加上 `_rest` 后缀，gRPC服务注册在注册中心的服务名称会自动加上 `_grpc`，以作区分。
 
 ::: tip
 `etcd`和`nacos`两种机制可以在一个服务中同时使用
@@ -98,85 +98,52 @@ GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 
 ### 简单轮询负载均衡 (Etcd用)
 
+需调用 `etcd.NewRRServiceProvider("服务名称_rest")` 创建 `etcd.RRServiceProvider` 实例。
+
 ```go
 func main() {
+	defer etcd.CloseEtcdClient()
 	conf := config.LoadFromEnv()
-
-	var segClient *segclient.WordcloudSegClient
-
-	if os.Getenv("GDD_MODE") == "micro" {
-		err := registry.NewNode()
-		if err != nil {
-			logrus.Panicln(fmt.Sprintf("%+v", err))
-		}
-		defer registry.Shutdown()
-		provider := ddhttp.NewMemberlistServiceProvider("wordcloud-segsvc")
-		segClient = segclient.NewWordcloudSegClient(ddhttp.WithProvider(provider))
-	} else {
-		segClient = segclient.NewWordcloudSegClient()
-	}
-
-	segClientProxy := segclient.NewWordcloudSegClientProxy(segClient)
-
-	...
-
-	svc := service.NewWordcloudMaker(conf, segClientProxy, minioClient, browser)
-
-	...
+	restProvider := etcd.NewRRServiceProvider("grpcdemo-server_rest")
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	handler := httpsrv.NewEnumDemoHandler(svc)
+	srv := rest.NewRestServer()
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
 }
 ```
 
 ### 平滑加权轮询负载均衡 (Etcd用)
 
-如果环境变量`GDD_WEIGHT`和`GDD_MEM_WEIGHT`都没有设置，默认权重是1。如果设置权重为0， 且`GDD_MEM_WEIGHT_INTERVAL`环境变量大于`0s`，则开启权重自适应计算功能，即每隔`GDD_MEM_WEIGHT_INTERVAL`设置的间隔时间根据节点的健康值和CPU空闲比例计算权重，并发送给其他节点。
+需调用 `etcd.NewSWRRServiceProvider("服务名称_rest")` 创建 `etcd.SWRRServiceProvider` 实例。  
+
+如果环境变量`GDD_WEIGHT`都没有设置，默认权重是1。
 
 ```go
 func main() {
+	defer etcd.CloseEtcdClient()
 	conf := config.LoadFromEnv()
-
-	var segClient *segclient.WordcloudSegClient
-
-	if os.Getenv("GDD_MODE") == "micro" {
-		err := registry.NewNode()
-		if err != nil {
-			logrus.Panicln(fmt.Sprintf("%+v", err))
-		}
-		defer registry.Shutdown()
-		provider := ddhttp.NewSmoothWeightedRoundRobinProvider("wordcloud-segsvc")
-		segClient = segclient.NewWordcloudSegClient(ddhttp.WithProvider(provider))
-	} else {
-		segClient = segclient.NewWordcloudSegClient()
-	}
-
-	segClientProxy := segclient.NewWordcloudSegClientProxy(segClient)
-
-	...
-
-	svc := service.NewWordcloudMaker(conf, segClientProxy, minioClient, browser)
-
-	...
+	restProvider := etcd.NewSWRRServiceProvider("grpcdemo-server_rest")
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	handler := httpsrv.NewEnumDemoHandler(svc)
+	srv := rest.NewRestServer()
+	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv.Run()
 }
 ```
 
 ### 简单轮询负载均衡 (nacos用)
 
+需调用 `nacos.NewRRServiceProvider("服务名称_rest")` 创建 `nacos.RRServiceProvider` 实例。
+
 ```go
 func main() {
+	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
-
-	err := registry.NewNode()
-	if err != nil {
-		logrus.Panic(fmt.Sprintf("%+v", err))
-	}
-	defer registry.Shutdown()
-
-	svc := service.NewStatsvc(conf,
-		nacosservicej.NewEcho(
-			ddhttp.WithRootPath("/nacos-service-j"),
-			ddhttp.WithProvider(ddhttp.NewNacosRRServiceProvider("nacos-service-j"))),
-	)
-	handler := httpsrv.NewStatsvcHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	restProvider := nacos.NewRRServiceProvider("grpcdemo-server_rest")
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	handler := httpsrv.NewEnumDemoHandler(svc)
+	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
@@ -184,23 +151,16 @@ func main() {
 
 ### 加权轮询负载均衡 (nacos用)
 
+需调用 `nacos.NewWRRServiceProvider("服务名称_rest")` 创建 `nacos.WRRServiceProvider` 实例。
+
 ```go
 func main() {
+	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
-
-	err := registry.NewNode()
-	if err != nil {
-		logrus.Panic(fmt.Sprintf("%+v", err))
-	}
-	defer registry.Shutdown()
-
-	svc := service.NewStatsvc(conf,
-		nacosservicej.NewEcho(
-			ddhttp.WithRootPath("/nacos-service-j"),
-			ddhttp.WithProvider(ddhttp.NewNacosWRRServiceProvider("nacos-service-j"))),
-	)
-	handler := httpsrv.NewStatsvcHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	restProvider := nacos.NewWRRServiceProvider("grpcdemo-server_rest")
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	handler := httpsrv.NewEnumDemoHandler(svc)
+	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }

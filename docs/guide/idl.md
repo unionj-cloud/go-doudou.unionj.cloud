@@ -6,7 +6,7 @@
 - 对go-doudou的用户来说，易学易上手
 - 对go-doudou开发者来说，Go语言编译器可以帮我们做语法检查，IDE可以为我们提供语法高亮，省去了开发IDL和IDE插件的工作量
 
-## 劣势
+## 劣势或限制
 用接口方法作为接口描述语言存在一些局限性。
 
 1. 仅支持生成`GET`, `POST`, `PUT`, `DELETE`接口。默认是`POST`接口。你可以给方法名加上`Get`/`Post`/`Put`/`Delete`前缀，指定接口的http请求方法。
@@ -20,6 +20,8 @@
 8. 对于`OpenAPI 3.0`的接口文档生成：
 	- 不支持请求头和响应头，全局参数以及权限校验。你可以把这些内容作为Go语言注释，写在接口声明的上方或者接口方法签名的上方，这些注释会作为`description`的值生成到接口文档里，然后显示在在线接口文档页面的相应位置。
 	- 不支持[Tag Object](https://spec.openapis.org/oas/v3.0.3#tag-object), [Callback Object](https://spec.openapis.org/oas/v3.0.3#callback-object), [Discriminator Object](https://spec.openapis.org/oas/v3.0.3#discriminator-object), [XML Object](https://spec.openapis.org/oas/v3.0.3#xml-object), [Security Scheme Object](https://spec.openapis.org/oas/v3.0.3#security-scheme-object), [OAuth Flows Object](https://spec.openapis.org/oas/v3.0.3#oauth-flows-object), [OAuth Flow Object](https://spec.openapis.org/oas/v3.0.3#oauth-flow-object), [Security Requirement Object ](https://spec.openapis.org/oas/v3.0.3#security-requirement-object). 你可能并不会用到这些API，但我需要在这里提一下。
+9. 对于Protobuf，暂时不支持 `oneof` 。
+10. 定义stream类型的入参和出参时，参数名称必须以`stream`作为前缀，例如：`stream1`，`stream2`，`streamReq`，`streamResp`等等都可以。
 
 ## 枚举
 
