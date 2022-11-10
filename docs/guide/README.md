@@ -13,7 +13,6 @@
 #### 结果
 `go-doudou`发布了。本项目主要受一下所列项目的启发
 - [https://github.com/kujtimiihoxha/kit](https://github.com/kujtimiihoxha/kit): 为`go-kit`技术栈写的代码生成器
-- [https://github.com/hashicorp/memberlist](https://github.com/hashicorp/memberlist): Go语言写的基于SWIM gossip协议的服务发现和故障检测的库
 - [https://spec.openapis.org/oas/v3.0.3](https://spec.openapis.org/oas/v3.0.3): `OpenAPI 3.0`接口描述规范
 
 ### 设计哲学

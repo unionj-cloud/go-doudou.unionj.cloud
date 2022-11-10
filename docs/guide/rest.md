@@ -105,7 +105,7 @@ func main() {
 	defer etcd.CloseEtcdClient()
 	conf := config.LoadFromEnv()
 	restProvider := etcd.NewRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -124,7 +124,7 @@ func main() {
 	defer etcd.CloseEtcdClient()
 	conf := config.LoadFromEnv()
 	restProvider := etcd.NewSWRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -141,7 +141,7 @@ func main() {
 	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
 	restProvider := nacos.NewRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -158,7 +158,7 @@ func main() {
 	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
 	restProvider := nacos.NewWRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(ddclient.WithProvider(restProvider)))
+	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -171,7 +171,7 @@ func main() {
 
 `go-doudou`内置了基于[golang.org/x/time/rate](https://pkg.go.dev/golang.org/x/time/rate)实现的令牌桶算法的内存限流器。
 
-在`github.com/unionj-cloud/go-doudou/framework/ratelimit/memrate`包里有一个`MemoryStore`结构体，存储了key和`Limiter`实例对。`Limiter`实例是限流器实例，key是该限流器实例的键。
+在`github.com/unionj-cloud/go-doudou/v2/framework/ratelimit/memrate`包里有一个`MemoryStore`结构体，存储了key和`Limiter`实例对。`Limiter`实例是限流器实例，key是该限流器实例的键。
 
 你可以往`memrate.NewLimiter`工厂函数传入一个可选函数`memrate.WithTimer`，设置当key空闲时间超过`timeout`以后的回调函数，比如可以从`MemoryStore`实例里将该key删除，以释放内存资源。
 
@@ -185,15 +185,16 @@ func main() {
 func main() {
 	...
 
-	handler := httpsrv.NewUsersvcHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
-
 	store := memrate.NewMemoryStore(func(_ context.Context, store *memrate.MemoryStore, key string) ratelimit.Limiter {
 		return memrate.NewLimiter(10, 30, memrate.WithTimer(10*time.Second, func() {
 			store.DeleteKey(key)
 		}))
 	})
-
+	srv := rest.NewRestServer()
+	srv.AddMiddleware(
+		httpsrv.RateLimit(store),
+	)
+	handler := httpsrv.NewUsersvcHandler(svc)
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
@@ -228,7 +229,7 @@ func main() {
 
 	svc := service.NewWordcloudBff(conf, minioClient, makerClientProxy, taskClientProxy, userClientProxy)
 	handler := httpsrv.NewWordcloudBffHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	srv := rest.NewRestServer()
 	srv.AddMiddleware(httpsrv.Auth(userClientProxy))
 
 	rdb := redis.NewClient(&redis.Options{
@@ -268,10 +269,10 @@ func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http
 ## 隔仓
 ### 用法
 
-`go-doudou`在`github.com/unionj-cloud/go-doudou/framework/http`包中内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
+`go-doudou`在`github.com/unionj-cloud/go-doudou/v2/framework/rest`包中内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的开箱即用的隔仓功能。
 
 ```go
-http.BulkHead(3, 10*time.Millisecond)
+rest.BulkHead(3, 10*time.Millisecond)
 ```
 
 上面的示例代码中，第一个参数`3`表示用于处理http请求的goroutine池中的worker数量，第二个参数`10*time.Millisecond`表示一个http请求进来以后等待被处理的最长等待时间，如果超时，即直接返回`429`状态码。
@@ -284,7 +285,7 @@ func main() {
 
 	svc := service.NewWordcloudBff(conf, minioClient, makerClientProxy, taskClientProxy, userClientProxy)
 	handler := httpsrv.NewWordcloudBffHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	srv := rest.NewRestServer()
 	srv.AddMiddleware(httpsrv.Auth(userClientProxy))
 
 	rdb := redis.NewClient(&redis.Options{
@@ -295,7 +296,7 @@ func main() {
 		return ratelimit.PerSecondBurst(conf.ConConf.RatelimitRate, conf.ConConf.RatelimitBurst)
 	})
 
-	srv.AddMiddleware(ddhttp.BulkHead(conf.ConConf.BulkheadWorkers, conf.ConConf.BulkheadMaxwaittime))
+	srv.AddMiddleware(rest.BulkHead(conf.ConConf.BulkheadWorkers, conf.ConConf.BulkheadMaxwaittime))
 
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
@@ -309,7 +310,7 @@ func main() {
 `go-doudou`在生成的客户端代码里内置了基于 [github.com/slok/goresilience](https://github.com/slok/goresilience) 封装的熔断/超时/重试等弹性机制的代码。你只需要执行如下命令，生成客户端代码拿来用即可
 
 ```shell
-go-doudou svc http --handler -c --doc
+go-doudou svc http -c
 ```  
 
 `-c`参数表示生成Go语言客户端代码。生成的`client`包的目录结构如下
@@ -329,14 +330,9 @@ func main() {
 
 	var segClient *segclient.WordcloudSegClient
 
-	if os.Getenv("GDD_MODE") == "micro" {
-		err := registry.NewNode()
-		if err != nil {
-			logrus.Panicln(fmt.Sprintf("%+v", err))
-		}
-		defer registry.Shutdown()
-		provider := ddhttp.NewSmoothWeightedRoundRobinProvider("wordcloud-segsvc")
-		segClient = segclient.NewWordcloudSegClient(ddhttp.WithProvider(provider))
+	if os.Getenv("GDD_SERVICE_DISCOVERY_MODE") != "" {
+		provider := etcd.NewSWRRServiceProvider("wordcloud-segsvc_rest")
+		segClient = segclient.NewWordcloudSegClient(restclient.WithProvider(provider))
 	} else {
 		segClient = segclient.NewWordcloudSegClient()
 	}
@@ -356,15 +352,11 @@ func main() {
 
 ### 用法
 
-`go-doudou`在`github.com/unionj-cloud/go-doudou/framework/logger`包里内置了一个全局的`logrus.Entry`。如果`GDD_ENV`环境变量不等于空字符串和`dev`，则会带上一些关于服务本身的元数据。
+`go-doudou`在`github.com/unionj-cloud/go-doudou/v2/toolkit/zlogger`包里内置了一个全局的`zerolog.Logger`。如果`GDD_ENV`环境变量不等于空字符串和`dev`，则会带上一些关于服务本身的元数据。
 
-`logger`包提供一些包级的函数，可以直接替换如`logrus.Info()`这样的代码为`logger.Info()`。你也可以调用`Init`函数自定义`logrus.Logger`实例。
+你也可以调用`InitEntry`函数自定义`zerolog.Logger`实例。
 
 你还可以通过配置`GDD_LOG_LEVEL`环境变量来设置日志级别，配置`GDD_LOG_FORMAT`环境变量来设置日志格式是`json`还是`text`。
-
-There are two built-in log related middlewares for you, `ddhttp.Metrics` and `ddhttp.Logger`. In short, `ddhttp.Metrics` is for printing brief log with limited 
-information, while `ddhttp.Logger` is for printing detail log with request and response body, headers, opentracing span and some other information, and it only takes 
-effect when environment variable `GDD_LOG_LEVEL` is set to `debug`.
 
 你可以通过配置`GDD_LOG_REQ_ENABLE=true`来开启http请求和响应的日志打印，默认是`false`，即不打印。
 
@@ -372,13 +364,13 @@ effect when environment variable `GDD_LOG_LEVEL` is set to `debug`.
 
 ```go 
 // 你可以用lumberjack这个库给服务增加日志rotate的功能
-logger.Init(logger.WithWritter(io.MultiWriter(os.Stdout, &lumberjack.Logger{
-    Filename:   filepath.Join(os.Getenv("LOG_PATH"), fmt.Sprintf("%s.log", ddconfig.GddServiceName.Load())),
-    MaxSize:    5,  // 单份日志文件最大5M，超过就会创建新的日志文件
-    MaxBackups: 10, // 最多保留10份日志文件
-    MaxAge:     7,  // 日志文件最长保留7天
-    Compress:   true, // 是否开启日志压缩
-})))
+zlogger.Output(io.MultiWriter(os.Stdout, &lumberjack.Logger{
+			Filename:   filepath.Join(os.Getenv("LOG_PATH"), fmt.Sprintf("%s.log", "usersvc")),
+		  MaxSize:    5,  // 单份日志文件最大5M，超过就会创建新的日志文件
+      MaxBackups: 10, // 最多保留10份日志文件
+      MaxAge:     7,  // 日志文件最长保留7天
+      Compress:   true, // 是否开启日志压缩
+}))
 ```
 
 ### ELK技术栈
@@ -481,7 +473,7 @@ func main() {
 
 	svc := service.NewWordcloudMaker(conf, segClientProxy, minioClient, browser)
 	handler := httpsrv.NewWordcloudMakerHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
@@ -630,7 +622,7 @@ spec:
 
 ## 限制请求体大小
 
-为了服务的稳定和安全，限制请求体的大小是必要的，我们可以用`ddhttp`包里的`BodyMaxBytes`中间件实现这个需求。
+为了服务的稳定和安全，限制请求体的大小是必要的，我们可以用`rest`包里的`BodyMaxBytes`中间件实现这个需求。
 
 ```go
 package main
@@ -643,9 +635,9 @@ func main() {
 	...
 
 	handler := httpsrv.NewOrdersvcHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
+	srv := rest.NewRestServer()
 	// 限制请求体大小不超过32M
-	srv.Use(ddhttp.BodyMaxBytes(32 << 20))
+	srv.Use(rest.BodyMaxBytes(32 << 20))
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
@@ -653,30 +645,20 @@ func main() {
 
 ## 网关
 
-在项目实践中，一个前端工程可能需要调用多个服务接口，前端同事做配置会很不方便，这时网关服务就派上用场了。前端同事只需要在配置文件中配置一个网关服务地址即可，然后通过`/服务名称/接口路径`的方式就可以请求到多个不同的微服务。我们可以用`ddhttp`包的`Proxy`中间件实现这个需求。
+在项目实践中，一个前端工程可能需要调用多个服务接口，前端同事做配置会很不方便，这时网关服务就派上用场了。前端同事只需要在配置文件中配置一个网关服务地址即可，然后通过`/服务名称/接口路径`的方式就可以请求到多个不同的微服务。我们可以用`rest`包的`Proxy`中间件实现这个需求。
+
+网关服务必须自己也注册到nacos服务注册中心或者etcd集群，或者同时加入。
 
 ```go
 package main
 
 import (
-	...
+	"github.com/unionj-cloud/go-doudou/v2/framework/rest"
 )
 
 func main() {
-	// 网关服务必须自己也注册到nacos服务注册中心或者加入memberlist集群，或者同时加入
-	err := registry.NewNode()
-	if err != nil {
-		logrus.Panic(fmt.Sprintf("%+v", err))
-	}
-	defer registry.Shutdown()
-
-	conf := config.LoadFromEnv()
-	svc := service.NewGateway(conf)
-	handler := httpsrv.NewGatewayHandler(svc)
-	srv := ddhttp.NewDefaultHttpSrv()
-	// 这里加上Proxy中间件即可
-	srv.AddMiddleware(ddhttp.Proxy(ddhttp.ProxyConfig{}))
-	srv.AddRoute(httpsrv.Routes(handler)...)
+	srv := rest.NewRestServer()
+	srv.AddMiddleware(rest.Proxy(rest.ProxyConfig{}))
 	srv.Run()
 }
 ```
@@ -684,15 +666,14 @@ func main() {
 `.env`配置文件示例
 ```shell
 GDD_SERVICE_NAME=gateway
-GDD_SERVICE_DISCOVERY_MODE=memberlist,nacos
+GDD_SERVICE_DISCOVERY_MODE=nacos,etcd
 
-GDD_MEM_PORT=65353
-GDD_MEM_SEED=localhost:7946
-GDD_MEM_HOST=
-GDD_MEM_NAME=gateway
-
+# nacos相关配置
 GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos
 GDD_NACOS_NOT_LOAD_CACHE_AT_START=true
+
+# etcd相关配置
+GDD_ETCD_ENDPOINTS=localhost:2379
 ```
 
 *注意：* 注册在nacos注册中心的非go-doudou框架开发的应用，如果有路由前缀，则必须将其设置到`metadata`里的`rootPath`属性，否则网关可能会报404。
@@ -760,7 +741,7 @@ func (receiver *ArticleHandlerImpl) ArticleList(_writer http.ResponseWriter, _re
 			http.Error(_writer, _err.Error(), http.StatusBadRequest)
 			return
 		} else {
-			if _err := ddhttp.ValidateStruct(payload); _err != nil {
+			if _err := rest.ValidateStruct(payload); _err != nil {
 				http.Error(_writer, _err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -788,7 +769,7 @@ func (receiver *ArticleHandlerImpl) Article(_writer http.ResponseWriter, _req *h
 	if _, exists := _req.Form["title"]; exists {
 		_title := _req.FormValue("title")
 		title = &_title
-		if _err := ddhttp.ValidateVar(title, "gt=0,lte=60", "title"); _err != nil {
+		if _err := rest.ValidateVar(title, "gt=0,lte=60", "title"); _err != nil {
 			http.Error(_writer, _err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -796,7 +777,7 @@ func (receiver *ArticleHandlerImpl) Article(_writer http.ResponseWriter, _req *h
 	if _, exists := _req.Form["content"]; exists {
 		_content := _req.FormValue("content")
 		content = &_content
-		if _err := ddhttp.ValidateVar(content, "gt=0,lte=1000", "content"); _err != nil {
+		if _err := rest.ValidateVar(content, "gt=0,lte=1000", "content"); _err != nil {
 			http.Error(_writer, _err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -822,8 +803,8 @@ func main() {
 
 	uni := ut.New(zh.New())
 	trans, _ := uni.GetTranslator("zh")
-	ddhttp.SetTranslator(trans)
-	zhtrans.RegisterDefaultTranslations(ddhttp.GetValidate(), trans)
+	rest.SetTranslator(trans)
+	zhtrans.RegisterDefaultTranslations(rest.GetValidate(), trans)
 
 	...
 

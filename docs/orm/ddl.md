@@ -172,7 +172,7 @@ package dao
 
 import (
 	"context"
-	"github.com/unionj-cloud/go-doudou/toolkit/sqlext/query"
+	"github.com/unionj-cloud/go-doudou/v2/toolkit/sqlext/query"
 )
 
 type Base interface {

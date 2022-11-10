@@ -13,7 +13,7 @@ sidebar: auto
 go-doudou由三个包构成：
 
 - `cmd`: 负责`go-doudou`命令行工具和代码生成器
-- `framework`: 负责RESTful/RPC框架 
+- `framework`: 负责REST/gRPC框架 
 - `toolkit`: 负责工具箱
 
 ### `cmd`包
@@ -73,98 +73,64 @@ go-doudou由三个包构成：
 ```shell
 ➜  framework git:(main) tree -L 2
 .
-├── buildinfo  # 用于构建二进制文件时，写入构建人、构建时间和go-doudou依赖版本等元信息
+├── buildinfo                              # 用于构建二进制文件时，写入构建人、构建时间和go-doudou依赖版本等元信息
 │   └── buildinfo.go
-├── configmgr  # 集成apollo和nacos远程配置中心的核心代码
+├── cache
+│   ├── 2qcache.go
+│   ├── arccache.go
+│   ├── base.go
+│   ├── item.go
+│   └── lrucache.go
+├── configmgr                              # 集成apollo和nacos远程配置中心的核心代码
 │   ├── apollo.go
 │   ├── apollo_test.go
 │   ├── mock
 │   ├── nacos.go
 │   ├── nacos_test.go
 │   └── testdata
-├── http  # RESTful服务框架层核心代码
-│   ├── bizerror.go  # 业务相关错误的包装类
-│   ├── bizerror_test.go
-│   ├── client.go  # 生成的go语言http请求客户端代码中依赖的类和微服务客户端负载均衡核心代码
-│   ├── client_test.go
-│   ├── config  # /go-doudou/config 内置运行时环境变量查询接口相关代码
-│   ├── middleware.go  # 内置http中间件相关代码
-│   ├── middleware_test.go
-│   ├── mock
-│   ├── model  # 封装gorilla/mux用到的路由包装类
-│   ├── onlinedoc  # /go-doudou/doc 和 /go-doudou/openapi.json 内置在线接口文档相关代码
-│   ├── prometheus  # /go-doudou/prometheus 内置prometheus指标采集接口相关代码
-│   ├── registry  # /go-doudou/registry 内置服务注册与发现机制相关的在线服务列表的代码
-│   └── server.go  # 路由和中间件注册、服务启动和优雅退出相关代码
+├── framework.go
+├── grpcx                                  # gRPC服务框架层核心代码
+│   ├── grpc_resolver_nacos
+│   ├── interceptors
+│   └── server.go
 ├── internal
-│   └── config  # 框架层配置相关代码
-├── logger  # 基于logrus的日志相关代码
+│   ├── banner
+│   └── config
+├── logger                                 # 已废弃
 │   ├── configure.go
 │   └── entry.go
-├── memberlist  # fork出来的hashicorp/memberlist源码，为实现内置服务注册与发现机制做了一些修改
-│   ├── LICENSE
-│   ├── Makefile
-│   ├── README.md
-│   ├── alive_delegate.go
-│   ├── awareness.go
-│   ├── awareness_test.go
-│   ├── broadcast.go
-│   ├── broadcast_test.go
-│   ├── config.go
-│   ├── config_test.go
-│   ├── conflict_delegate.go
-│   ├── delegate.go
-│   ├── dns_client_interface.go
-│   ├── event_delegate.go
-│   ├── event_delegate_test.go
-│   ├── integ_test.go
-│   ├── keyring.go
-│   ├── keyring_test.go
-│   ├── logging.go
-│   ├── logging_test.go
-│   ├── memberlist.go
-│   ├── memberlist_interface.go
-│   ├── memberlist_test.go
-│   ├── merge_delegate.go
-│   ├── mock
-│   ├── net.go
-│   ├── net_conn_interface.go
-│   ├── net_test.go
-│   ├── net_transport.go
-│   ├── ping_delegate.go
-│   ├── queue.go
-│   ├── queue_test.go
-│   ├── security.go
-│   ├── security_test.go
-│   ├── state.go
-│   ├── state_test.go
-│   ├── suspicion.go
-│   ├── suspicion_test.go
-│   ├── todo.md
-│   ├── transport.go
-│   ├── transport_test.go
-│   ├── util.go
-│   ├── util_test.go
-│   ├── weightbroadcast.go
-│   └── weightbroadcast_test.go
-├── ratelimit  # 限流器相关代码
+├── ratelimit                              # 限流器
 │   ├── limit.go
 │   ├── limit_test.go
 │   ├── limiter.go
-│   ├── memrate  # 内存限流器
-│   └── redisrate  # redis限流器
-├── registry  # 服务注册相关代码
-│   ├── config.go  # 实现运行时修改memberlist参数
-│   ├── config_test.go
-│   ├── delegate.go  # memberlist相关
-│   ├── delegate_test.go
-│   ├── eventdelegate.go  # memberlist相关
-│   ├── eventdelegate_test.go
-│   ├── nacos  # 集成nacos服务注册与发现机制相关代码
-│   ├── node.go  # 服务注册代码
+│   ├── memrate
+│   └── redisrate
+├── registry                               # 服务注册相关代码
+│   ├── etcd                               # etcd相关
+│   ├── nacos                              # nacos相关
+│   ├── node.go
 │   ├── node_test.go
-│   ├── serviceprovider.go  # 服务发现接口类
-│   └── serviceprovider_test.go
+│   └── utils
+├── rest                                   # REST服务框架层核心代码
+│   ├── bizerror.go
+│   ├── bizerror_test.go
+│   ├── confighandler.go
+│   ├── dochandler.go
+│   ├── docindex.go
+│   ├── gateway.go
+│   ├── httprouter
+│   ├── middleware.go
+│   ├── middleware_test.go
+│   ├── mock
+│   ├── model.go
+│   ├── prometheus
+│   ├── promhandler.go
+│   ├── prommiddleware.go
+│   ├── server.go
+│   └── validate.go
+├── restclient                             # REST服务客户端相关代码
+│   ├── restclient.go
+│   └── restclient_test.go
 ├── testdata
 │   ├── change
 │   ├── checkIc2
@@ -179,10 +145,10 @@ go-doudou由三个包构成：
 │   ├── usersvc_deployment.yaml
 │   ├── usersvc_statefulset.yaml
 │   └── vo
-└── tracing  # 集成jaeger调用链跟踪相关代码
+└── tracing                               # 集成jaeger调用链跟踪相关代码
     └── tracer.go
 
-31 directories, 77 files
+34 directories, 40 files
 ```
 
 ### `toolkit`包
@@ -253,12 +219,14 @@ go-doudou由三个包构成：
 ├── timeutils  # 时间相关工具
 │   ├── timeutils.go
 │   └── timeutils_test.go
-└── yaml  # 解析yaml配置文件工具
-    ├── testdata
-    ├── yaml.go
-    └── yaml_test.go
+├── yaml # 解析yaml配置文件工具
+│   ├── testdata
+│   ├── yaml.go
+│   └── yaml_test.go
+└── zlogger # 日志相关
+    └── entry.go
 
-30 directories, 35 files
+31 directories, 35 files
 ```
 
 ## 代码质量
