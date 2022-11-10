@@ -364,7 +364,7 @@ func main() {
 
 ```go 
 // 你可以用lumberjack这个库给服务增加日志rotate的功能
-zlogger.Output(io.MultiWriter(os.Stdout, &lumberjack.Logger{
+zlogger.SetOutput(io.MultiWriter(os.Stdout, &lumberjack.Logger{
 			Filename:   filepath.Join(os.Getenv("LOG_PATH"), fmt.Sprintf("%s.log", "usersvc")),
 		  MaxSize:    5,  // 单份日志文件最大5M，超过就会创建新的日志文件
       MaxBackups: 10, // 最多保留10份日志文件
