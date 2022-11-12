@@ -98,7 +98,7 @@ GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 
 ### 简单轮询负载均衡 (Etcd用)
 
-需调用 `etcd.NewRRServiceProvider("服务名称_rest")` 创建 `etcd.RRServiceProvider` 实例。
+需调用 `etcd.NewRRServiceProvider("注册在etcd中的服务名称")` 创建 `etcd.RRServiceProvider` 实例。
 
 ```go
 func main() {
@@ -115,7 +115,7 @@ func main() {
 
 ### 平滑加权轮询负载均衡 (Etcd用)
 
-需调用 `etcd.NewSWRRServiceProvider("服务名称_rest")` 创建 `etcd.SWRRServiceProvider` 实例。  
+需调用 `etcd.NewSWRRServiceProvider("注册在etcd中的服务名称")` 创建 `etcd.SWRRServiceProvider` 实例。  
 
 如果环境变量`GDD_WEIGHT`都没有设置，默认权重是1。
 
@@ -134,7 +134,7 @@ func main() {
 
 ### 简单轮询负载均衡 (nacos用)
 
-需调用 `nacos.NewRRServiceProvider("服务名称_rest")` 创建 `nacos.RRServiceProvider` 实例。
+需调用 `nacos.NewRRServiceProvider("注册在nacos中的服务名称")` 创建 `nacos.RRServiceProvider` 实例。
 
 ```go
 func main() {
@@ -151,7 +151,7 @@ func main() {
 
 ### 加权轮询负载均衡 (nacos用)
 
-需调用 `nacos.NewWRRServiceProvider("服务名称_rest")` 创建 `nacos.WRRServiceProvider` 实例。
+需调用 `nacos.NewWRRServiceProvider("注册在nacos中的服务名称")` 创建 `nacos.WRRServiceProvider` 实例。
 
 ```go
 func main() {
@@ -485,140 +485,7 @@ func main() {
 
 ## Grafana / Prometheus
 
-### 用法
-请参考 [prometheus服务发现](./deployment.md#prometheus服务发现) 章节和代码库 [wordcloud](https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/wordcloud) 
-
-### 示例
-
-```yaml
-version: '3.9'
-
-services:
-  prometheus:
-    container_name: prometheus
-    hostname: prometheus
-    image: wubin1989/go-doudou-prometheus-sd:v1.0.2
-    environment:
-      - GDD_SERVICE_NAME=prometheus
-      - PROM_REFRESH_INTERVAL=15s
-      - GDD_MEM_HOST=localhost
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-    ports:
-      - "9090:9090"
-      - "7946:7946"
-      - "7946:7946/udp"
-    restart: always
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9090" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      testing_net:
-        ipv4_address: 172.28.1.1
-
-  grafana:
-	image: grafana/grafana:latest
-	container_name: grafana
-	volumes:
-		- ./grafana/provisioning:/etc/grafana/provisioning
-	environment:
-		- GF_AUTH_DISABLE_LOGIN_FORM=false
-		- GF_AUTH_ANONYMOUS_ENABLED=false
-		- GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-	ports:
-		- 3000:3000
-	networks:
-		testing_net:
-		ipv4_address: 172.28.1.8
-
-networks:
-  testing_net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.28.0.0/16
-```
-
-在k8s部署grafana的yaml文件示例：
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: grafana
-  name: grafana
-spec:
-  selector:
-    matchLabels:
-      app: grafana
-  template:
-    metadata:
-      labels:
-        app: grafana
-    spec:
-      securityContext:
-        fsGroup: 472
-        supplementalGroups:
-          - 0
-      containers:
-        - name: grafana
-          image: grafana/grafana:8.4.4
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 3000
-              name: http-grafana
-              protocol: TCP
-          readinessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /robots.txt
-              port: 3000
-              scheme: HTTP
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 2
-          livenessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: 3000
-            timeoutSeconds: 1
-          resources:
-            requests:
-              cpu: 250m
-              memory: 750Mi
-          volumeMounts:
-            - mountPath: /var/lib/grafana
-              name: grafana-pv
-      volumes:
-        - name: grafana-pv
-          persistentVolumeClaim:
-            claimName: grafana-volume
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-spec:
-  ports:
-    - port: 3000
-      protocol: TCP
-      targetPort: http-grafana
-  selector:
-    app: grafana
-  sessionAffinity: None
-  type: LoadBalancer
-```
-
-### 截图
-
-![grafana](/images/grafana.png)
+正在编写中
 
 ## 限制请求体大小
 
