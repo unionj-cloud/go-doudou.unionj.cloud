@@ -69,7 +69,7 @@ func main() {
 
 ### 平滑加权轮询负载均衡 (Etcd用)
 
-需调用 `etcd.NewWRRGrpcClientConn("注册在etcd中的服务名称", tlsOption)` 创建 `*grpc.ClientConn` 实例。
+需调用 `etcd.NewSWRRGrpcClientConn("注册在etcd中的服务名称", tlsOption)` 创建 `*grpc.ClientConn` 实例。
 
 ```go
 func main() {
@@ -78,13 +78,12 @@ func main() {
 	conf := config.LoadFromEnv()
 
 	tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
-  // 创建支持etcd平滑加权轮询负载均衡机制的gRPC连接
-	grpcConn := etcd.NewWRRGrpcClientConn("grpcdemo-server_grpc", tlsOption)
+  // 创建支持etcd平滑加权轮询负载均衡机制(SWRR)的gRPC连接
+	grpcConn := etcd.NewSWRRGrpcClientConn("grpcdemo-server_grpc", tlsOption)
   // 程序退出前需要关闭gRPC连接
 	defer grpcConn.Close()
 
-	svc := service.NewEnumDemo(conf, pb.NewHelloworldServiceClient(grpcConn),
-		client.NewHelloworldClient(ddclient.WithClient(newClient()), ddclient.WithProvider(restProvider)))
+	svc := service.NewEnumDemo(conf, pb.NewHelloworldServiceClient(grpcConn))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -94,14 +93,25 @@ func main() {
 
 ### 简单轮询负载均衡 (nacos用)
 
-需调用 `nacos.NewRRServiceProvider("服务名称_rest")` 创建 `nacos.RRServiceProvider` 实例。
+调用 `nacos.NewRRGrpcClientConn` 方法，创建gRPC连接。 
 
 ```go
 func main() {
+  // 程序退出前需要关闭nacos客户端
 	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
-	restProvider := nacos.NewRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
+
+	tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	// 创建支持nacos简单轮询负载均衡机制的gRPC连接
+	grpcConn := nacos.NewRRGrpcClientConn(nacos.NacosConfig{
+		ServiceName: "grpcdemo-server_grpc",
+	}, tlsOption)
+  // 程序退出前需要关闭gRPC连接
+	defer grpcConn.Close()
+
+
+	svc := service.NewEnumDemo(conf, pb.NewHelloworldServiceClient(grpcConn))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -111,14 +121,25 @@ func main() {
 
 ### 加权轮询负载均衡 (nacos用)
 
-需调用 `nacos.NewWRRServiceProvider("服务名称_rest")` 创建 `nacos.WRRServiceProvider` 实例。
+调用 `nacos.NewWRRGrpcClientConn` 方法，创建gRPC连接。 
 
 ```go
 func main() {
+  // 程序退出前需要关闭nacos客户端
 	defer nacos.CloseNamingClient()
 	conf := config.LoadFromEnv()
-	restProvider := nacos.NewWRRServiceProvider("grpcdemo-server_rest")
-	svc := service.NewEnumDemo(conf, client.NewHelloworldClient(restclient.WithProvider(restProvider)))
+
+	tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	// 创建支持nacos加权轮询负载均衡机制的gRPC连接
+	grpcConn := nacos.NewWRRGrpcClientConn(nacos.NacosConfig{
+		ServiceName: "grpcdemo-server_grpc",
+	}, tlsOption)
+  // 程序退出前需要关闭gRPC连接
+	defer grpcConn.Close()
+
+
+	svc := service.NewEnumDemo(conf, pb.NewHelloworldServiceClient(grpcConn))
 	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
@@ -139,92 +160,130 @@ func main() {
 
 ### 内存限流器示例
 
-内存限流器基于本机内存，只支持本机限流。
+内存限流器基于本机内存，只支持本机限流。首先需要调用 `memrate.NewMemoryStore` 创建一个 `MemoryStore` 实例，存储要限制的key和与之对应的限流器。然后调用 `grpcx_ratelimit.NewRateLimitInterceptor(grpcx_ratelimit.WithMemoryStore(mstore))` 创建一个 `grpcx_ratelimit.RateLimitInterceptor` 拦截器实例。然后需要自定义一个 `grpcx_ratelimit.KeyGetter` 接口的实现结构体，实现从 `context.Context` 提取key的逻辑。最后在拦截器链
+中加入代码 `rl.UnaryServerInterceptor(keyGetter),` 即可实现限流。下面是一个对客户端ip限流的示例。
 
 ```go
 func main() {
-	...
+	defer etcd.CloseEtcdClient()
+	conf := config.LoadFromEnv()
+	svc := service.NewHelloworld(conf)
 
-	store := memrate.NewMemoryStore(func(_ context.Context, store *memrate.MemoryStore, key string) ratelimit.Limiter {
-		return memrate.NewLimiter(10, 30, memrate.WithTimer(10*time.Second, func() {
-			store.DeleteKey(key)
-		}))
-	})
+	go func() {
+		mstore := memrate.NewMemoryStore(func(_ context.Context, store *memrate.MemoryStore, key string) ratelimit.Limiter {
+      // 限流器创建函数，表示创建一个每秒允许处理10次请求，峰值最多允许处理30次请求，同时空闲时间最长10秒的限流器。空闲超过10秒会从内存中删除，已释放内存空间。
+      // 空闲时间至少要大于 1 / rate * burst 才有意义，也就是至少要等令牌桶重新填满恢复初始状态以后。
+			return memrate.NewLimiter(10, 30, memrate.WithTimer(10*time.Second, func() {
+				store.DeleteKey(key)
+			}))
+		})
+		rl := grpcx_ratelimit.NewRateLimitInterceptor(grpcx_ratelimit.WithMemoryStore(mstore))
+		keyGetter := &RateLimitKeyGetter{}
+		grpcServer := grpcx.NewGrpcServer(
+			grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+        // 本示例中必须加grpc_ctxtags拦截器，它会自动帮我们往上下文context.Context中加入RPC调用方的"peer.address"信息
+				grpc_ctxtags.StreamServerInterceptor(),
+				grpc_opentracing.StreamServerInterceptor(),
+				grpc_prometheus.StreamServerInterceptor,
+				logging.StreamServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+				rl.StreamServerInterceptor(keyGetter),
+				grpc_recovery.StreamServerInterceptor(),
+			)),
+			grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+        // 本示例中必须加grpc_ctxtags拦截器，它会自动帮我们往上下文context.Context中加入RPC调用方的"peer.address"信息
+				grpc_ctxtags.UnaryServerInterceptor(),
+				grpc_opentracing.UnaryServerInterceptor(),
+				grpc_prometheus.UnaryServerInterceptor,
+				logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+				rl.UnaryServerInterceptor(keyGetter),
+				grpc_recovery.UnaryServerInterceptor(),
+			)),
+		)
+		pb.RegisterHelloworldServiceServer(grpcServer, svc)
+		grpcServer.Run()
+	}()
+
+	handler := httpsrv.NewHelloworldHandler(svc)
 	srv := rest.NewRestServer()
-	srv.AddMiddleware(
-		httpsrv.RateLimit(store),
-	)
-	handler := httpsrv.NewUsersvcHandler(svc)
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
 ```
 
-**注意：** 你需要自己实现http middleware。下面是一个例子。
+自定义 `grpcx_ratelimit.KeyGetter` 接口的实现结构体：
 
 ```go
-// RateLimit limits rate based on memrate.MemoryStore
-func RateLimit(store *memrate.MemoryStore) func(inner http.Handler) http.Handler {
-	return func(inner http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			key := r.RemoteAddr[:strings.LastIndex(r.RemoteAddr, ":")]
-			limiter := store.GetLimiter(key)
-			if !limiter.Allow() {
-				http.Error(w, "too many requests", http.StatusTooManyRequests)
-				return
-			}
-			inner.ServeHTTP(w, r)
-		})
+var _ grpcx_ratelimit.KeyGetter = (*RateLimitKeyGetter)(nil)
+
+type RateLimitKeyGetter struct {
+}
+
+func (r *RateLimitKeyGetter) GetKey(ctx context.Context, _ string) string {
+	var peerAddr string
+	if value, ok := grpc_ctxtags.Extract(ctx).Values()["peer.address"]; ok {
+		peerAddr = value.(string)
 	}
+	if stringutils.IsEmpty(peerAddr) {
+		if value, ok := peer.FromContext(ctx); ok {
+			peerAddr = value.Addr.String()
+		}
+	}
+	return peerAddr[:strings.LastIndex(peerAddr, ":")]
 }
 ```
 
 ### Redis限流器示例
 
-Redis限流器可以用于需要多个实例同时对一个key限流的场景。
+Redis限流器可以用于需要多个实例同时对一个key限流的场景。**key的过期时间等于根据速率计算的生成1个令牌所需的时间**。
 
 ```go
 func main() {
-	...
+	defer etcd.CloseEtcdClient()
+	conf := config.LoadFromEnv()
+	svc := service.NewHelloworld(conf)
 
-	svc := service.NewWordcloudBff(conf, minioClient, makerClientProxy, taskClientProxy, userClientProxy)
-	handler := httpsrv.NewWordcloudBffHandler(svc)
+	go func() {
+    rdb := redis.NewClient(&redis.Options{
+			Addr: "localhost:6379",
+		})
+		fn := redisrate.LimitFn(func(ctx context.Context) ratelimit.Limit {
+      // 限流器创建函数，表示创建一个每秒允许处理10次请求，峰值最多允许处理30次请求的限流器。
+			return ratelimit.PerSecondBurst(10, 30)
+		})
+		rl := grpcx_ratelimit.NewRateLimitInterceptor(grpcx_ratelimit.WithRedisStore(rdb, fn))
+		keyGetter := &RateLimitKeyGetter{}
+		grpcServer := grpcx.NewGrpcServer(
+			grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+        // 本示例中必须加grpc_ctxtags拦截器，它会自动帮我们往上下文context.Context中加入RPC调用方的"peer.address"信息
+				grpc_ctxtags.StreamServerInterceptor(),
+				grpc_opentracing.StreamServerInterceptor(),
+				grpc_prometheus.StreamServerInterceptor,
+				logging.StreamServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+				rl.StreamServerInterceptor(keyGetter),
+				grpc_recovery.StreamServerInterceptor(),
+			)),
+			grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+        // 本示例中必须加grpc_ctxtags拦截器，它会自动帮我们往上下文context.Context中加入RPC调用方的"peer.address"信息
+				grpc_ctxtags.UnaryServerInterceptor(),
+				grpc_opentracing.UnaryServerInterceptor(),
+				grpc_prometheus.UnaryServerInterceptor,
+				logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+				rl.UnaryServerInterceptor(keyGetter),
+				grpc_recovery.UnaryServerInterceptor(),
+			)),
+		)
+		pb.RegisterHelloworldServiceServer(grpcServer, svc)
+		grpcServer.Run()
+	}()
+
+	handler := httpsrv.NewHelloworldHandler(svc)
 	srv := rest.NewRestServer()
-	srv.AddMiddleware(httpsrv.Auth(userClientProxy))
-
-	rdb := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:6379", conf.RedisConf.Host),
-	})
-
-	fn := redisrate.LimitFn(func(ctx context.Context) ratelimit.Limit {
-		return ratelimit.PerSecondBurst(conf.ConConf.RatelimitRate, conf.ConConf.RatelimitBurst)
-	})
-
-	srv.AddMiddleware(httpsrv.RedisRateLimit(rdb, fn))
-
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
 }
 ```
 
-**注意：** 你需要自己实现http middleware。下面是一个例子。
-
-```go
-// RedisRateLimit limits rate based on redisrate.GcraLimiter
-func RedisRateLimit(rdb redisrate.Rediser, fn redisrate.LimitFn) func(inner http.Handler) http.Handler {
-	return func(inner http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userId, _ := service.UserIdFromContext(r.Context())
-			limiter := redisrate.NewGcraLimiterLimitFn(rdb, strconv.Itoa(userId), fn)
-			if !limiter.Allow() {
-				http.Error(w, "too many requests", http.StatusTooManyRequests)
-				return
-			}
-			inner.ServeHTTP(w, r)
-		})
-	}
-}
-```
+自定义 `grpcx_ratelimit.KeyGetter` 接口的实现结构体示例请参考上文内存限流器示例。
 
 ## 隔仓
 
