@@ -1,7 +1,6 @@
 # 部署
 
-## 单体架构
-### ECS服务器
+## ECS服务器
 
 1. 克隆项目代码到服务器上
 
@@ -37,7 +36,7 @@ No Sockets found in /var/run/screen/S-root.
 一般程序员日常开发掌握这几个命令已经做够了。
 :::
 
-### Docker
+## Docker
 
 你可以直接使用`go-doudou svc init`命令生成的`Dockerfile`，也可以根据实际项目需求修改。
 
@@ -59,7 +58,7 @@ docker run -it -d -p 6060:6060 myservice
 
 需要把`myservice`改成你自己的镜像名称。
 
-### Kubernetes
+## Kubernetes
 
 `go-doudou`开箱支持k8s部署。
 
@@ -73,14 +72,5 @@ go-doudou svc push --pre godoudou_ -r wubin1989
 
 每次执行此命令都会自动更新镜像的版本号，命名规则为`v` + `yyyyMMddHHmmss`，同时自动更新k8s部署文件里的镜像名称。
 
-2. 执行`go-doudou svc deploy`命令。此命令默认采用`_statefulset.yaml`后缀的文件部署有状态服务。你可以通过`-k`参数设置其他k8s部署文件路径，如`_deployment.yaml`后缀的无状态服务的部署文件。
+2. 执行`go-doudou svc deploy`命令。此命令默认采用`_deployment.yaml`后缀的文件部署无状态服务。你可以通过`-k`参数设置其他k8s部署文件路径。
 
-```shell
-go-doudou svc deploy -k helloworld_deployment.yaml
-```
-
-需要将`helloworld_deployment.yaml`改成你自己的部署文件路径。
-
-## 微服务架构
-
-正在完善文档，敬请期待...

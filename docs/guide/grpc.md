@@ -285,13 +285,33 @@ func main() {
 
 自定义 `grpcx_ratelimit.KeyGetter` 接口的实现结构体示例请参考上文内存限流器示例。
 
-## 隔仓
+## 重试 
 
-正在编写中
+实现重试机制需要依赖第三方开源库 `github.com/grpc-ecosystem/go-grpc-middleware` 的  `retry` 模块，将重试拦截器加入 `dialOptions` 切片中，再将 `dialOptions` 作为入参放入负载均衡客户端工厂函数中创建gRPC客户端连接实例。具体用法请参考源码中的注释：[https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/retry](https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/retry)。
 
-## 熔断 / 超时 / 重试 
+```go
+tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
 
-正在编写中  
+opts := []grpc_retry.CallOption{
+	grpc_retry.WithBackoff(grpc_retry.BackoffLinear(100 * time.Millisecond)),
+	grpc_retry.WithCodes(codes.NotFound, codes.Aborted),
+}
+
+dialOptions := []grpc.DialOption{
+	tlsOption,
+	grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+		grpc_retry.StreamClientInterceptor(opts...),
+	)),
+	grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+		grpc_retry.UnaryClientInterceptor(opts...),
+	)),
+}
+
+grpcConn := nacos.NewWRRGrpcClientConn(nacos.NacosConfig{
+	ServiceName: "grpcdemo-server_grpc",
+}, dialOptions...)
+defer grpcConn.Close()
+```
 
 ## 日志
 
@@ -378,7 +398,7 @@ networks:
 
 ### 用法
 
-集成Jaeger调用链监控，只需三步
+集成Jaeger调用链监控需要以下步骤：
 
 1. 启动Jaeger
 
@@ -404,20 +424,71 @@ defer closer.Close()
 opentracing.SetGlobalTracer(tracer)
 ```
 
-然后你的`main`函数应该是类似这个样子
+4. 服务端在调用 `grpcx.NewGrpcServer` 函数创建 `grpcx.GrpcServer` 实例时通过 `grpc_opentracing.StreamServerInterceptor(),` 和 `grpc_opentracing.UnaryServerInterceptor(),` 两行代码加上opentracing拦截器  
 
 ```go
 func main() {
-	...
+	defer nacos.CloseNamingClient()
+	conf := config.LoadFromEnv()
+
+	tracer, closer := tracing.Init()
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
+	
+	svc := service.NewHelloworld(conf)
+	grpcServer := grpcx.NewGrpcServer(
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_ctxtags.StreamServerInterceptor(),
+			grpc_opentracing.StreamServerInterceptor(),
+			grpc_prometheus.StreamServerInterceptor,
+			logging.StreamServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+			grpc_recovery.StreamServerInterceptor(),
+		)),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_opentracing.UnaryServerInterceptor(),
+			grpc_prometheus.UnaryServerInterceptor,
+			logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+			grpc_recovery.UnaryServerInterceptor(),
+		)),
+	)
+	pb.RegisterHelloworldServiceServer(grpcServer, svc)
+	grpcServer.Run()
+}
+```
+
+5. 客户端也需要给grpc客户端连接实例加上opentracing拦截器，使客户端在发起gRPC请求的时候可以由opentracing实现（jaeger）将span id注入metadata，否则和服务端的调用链串不起来。
+
+```go
+func main() {
+	defer nacos.CloseNamingClient()
+	conf := config.LoadFromEnv()
 
 	tracer, closer := tracing.Init()
 	defer closer.Close()
 	opentracing.SetGlobalTracer(tracer)
 
-	...
+	tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
 
-	svc := service.NewWordcloudMaker(conf, segClientProxy, minioClient, browser)
-	handler := httpsrv.NewWordcloudMakerHandler(svc)
+	dialOptions := []grpc.DialOption{
+		tlsOption,
+		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+			grpc_opentracing.StreamClientInterceptor(),
+		)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+			grpc_opentracing.UnaryClientInterceptor(),
+		)),
+	}
+
+	grpcConn := nacos.NewWRRGrpcClientConn(nacos.NacosConfig{
+		ServiceName: "grpcdemo-server_grpc",
+	}, dialOptions...)
+	defer grpcConn.Close()
+
+	restProvider := nacos.NewWRRServiceProvider("grpcdemo-server_rest")
+	svc := service.NewEnumDemo(conf, pb.NewHelloworldServiceClient(grpcConn),
+		client.NewHelloworldClient(ddclient.WithClient(newClient()), ddclient.WithProvider(restProvider)))
+	handler := httpsrv.NewEnumDemoHandler(svc)
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
@@ -425,9 +496,6 @@ func main() {
 ```
 
 ### 截图
-![jaeger1](/images/jaeger1.png)
-![jaeger2](/images/jaeger2.png)  
+![jaeger3](/images/jaeger3.jpeg)
+![jaeger4](/images/jaeger4.jpeg)  
 
-## Grafana / Prometheus
-
-正在编写中

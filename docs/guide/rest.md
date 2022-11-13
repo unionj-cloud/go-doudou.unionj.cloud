@@ -433,7 +433,7 @@ networks:
 
 ### 用法
 
-集成Jaeger调用链监控，只需三步
+集成Jaeger调用链监控需要以下步骤
 
 1. 启动Jaeger
 
@@ -482,10 +482,6 @@ func main() {
 ### 截图
 ![jaeger1](/images/jaeger1.png)
 ![jaeger2](/images/jaeger2.png)  
-
-## Grafana / Prometheus
-
-正在编写中
 
 ## 限制请求体大小
 
