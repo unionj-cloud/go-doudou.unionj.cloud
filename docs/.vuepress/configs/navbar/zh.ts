@@ -23,8 +23,12 @@ export const zh: NavbarConfig = [
     link: '/contribution/',
   },
   {
-    text: `v${version}`,
+    text: `旧版`,
     children: [
+      {
+        text: 'v1.x',
+        link: 'https://go-doudou-v1.unionj.cloud/',
+      },
       {
         text: 'v0.x',
         link: 'https://github.com/unionj-cloud/go-doudou/blob/v0.9.8/README.md',
@@ -35,8 +39,8 @@ export const zh: NavbarConfig = [
       },
     ],
   },
-  {
-    text: `En`,
-    link: 'https://go-doudou.github.io',
-  },
+  // {
+  //   text: `En`,
+  //   link: 'https://go-doudou.github.io',
+  // },
 ]
