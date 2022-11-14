@@ -147,6 +147,172 @@ func main() {
 }
 ```
 
+## 登录鉴权
+
+`go-doudou` 的 `framework/grpcx/interceptors/grpcx_auth` 包里内置了登录授权相关的拦截器 `grpcx_auth.UnaryServerInterceptor` 和 `grpcx_auth.StreamServerInterceptor`，以及接口 `grpcx_auth.Authorizer`。开发者可以自定义 `grpcx_auth.Authorizer` 的接口实现。以下是用法示例：
+
+### 接口定义
+
+请注意接口方法定义上方的`@role`注解。`go-doudou` 的注解用法请参考官方文档的 `指南->接口定义->注解->gRPC服务中的使用方法` 相关章节。
+
+```go
+package service
+
+import "context"
+
+//go:generate go-doudou svc http
+//go:generate go-doudou svc grpc
+
+type Annotation interface {
+	// 此接口可公开访问，无需校验登录和权限
+	GetGuest(ctx context.Context) (data string, err error)
+	// 此接口只有登录用户有权访问
+	// @role(USER,ADMIN)
+	GetUser(ctx context.Context) (data string, err error)
+	// 此接口只有管理员有权访问
+	// @role(ADMIN)
+	GetAdmin(ctx context.Context) (data string, err error)
+}
+```
+
+### grpcx_auth.Authorizer接口实现
+
+以下是基于http basic登录鉴权的自定义 `grpcx_auth.Authorizer` 接口实现的示例代码：
+
+```go
+package grpc
+
+import (
+	"annotation/vo"
+	"context"
+	"encoding/base64"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/unionj-cloud/go-doudou/v2/framework/grpcx/interceptors/grpcx_auth"
+	"github.com/unionj-cloud/go-doudou/v2/toolkit/sliceutils"
+	"strings"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+// 确保AuthInterceptor结构体实现grpcx_auth.Authorizer接口
+var _ grpcx_auth.Authorizer = (*AuthInterceptor)(nil)
+
+// AuthInterceptor是grpcx_auth.Authorizer接口的实现
+type AuthInterceptor struct {
+	// 此处为了简单，采用模拟数据库用户角色表的基于内存的数据结构，
+	// 但实际项目中通常会定义一个数据库连接实例作为成员变量，
+	// 采用真实的数据库来查询用户表、角色表、权限表等
+	userStore vo.UserStore
+}
+
+// NewAuthInterceptor是创建AuthInterceptor结构体实例的工厂方法
+func NewAuthInterceptor(userStore vo.UserStore) *AuthInterceptor {
+	return &AuthInterceptor{
+		userStore: userStore,
+	}
+}
+
+// 解析http basic token，返回用户名和密码
+func parseToken(token string) (username, password string, ok bool) {
+	c, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return "", "", false
+	}
+	cs := string(c)
+	username, password, ok = strings.Cut(cs, ":")
+	if !ok {
+		return "", "", false
+	}
+	return username, password, true
+}
+
+// Authorize方法实现了grpcx_auth.Authorizer接口
+func (interceptor *AuthInterceptor) Authorize(ctx context.Context, fullMethod string) (context.Context, error) {
+	method := fullMethod[strings.LastIndex(fullMethod, "/")+1:]
+	// go-doudou的注解用法请参考官方文档的"指南->接口定义->注解->gRPC服务中的使用方法"章节
+	// 如果gRPC方法定义没有@role注解，则表示可以公开访问，无须鉴权，直接放行
+	if !MethodAnnotationStore.HasAnnotation(method, "@role") {
+		return ctx, nil
+	}
+	// 此处依赖了第三方开源库github.com/grpc-ecosystem/go-grpc-middleware的auth包
+	// 从metadata里提取http basic token
+	token, err := grpc_auth.AuthFromMD(ctx, "Basic")
+	if err != nil {
+		return ctx, err
+	}
+	// 解析http basic token，返回用户名和密码
+	user, pass, ok := parseToken(token)
+	if !ok {
+		return ctx, status.Error(codes.Unauthenticated, "Provide user name and password")
+	}
+	// 通过用户名和密码查到该用户的角色
+	role, exists := interceptor.userStore[vo.Auth{user, pass}]
+	if !exists {
+		return ctx, status.Error(codes.Unauthenticated, "Provide user name and password")
+	}
+	// 从MethodAnnotationStore中查出可以访问该gRPC方法的角色列表
+	params := MethodAnnotationStore.GetParams(method, "@role")
+	// 判断该用户的角色是否包含在角色列表中，如果在，则通过了鉴权，如果不在，则拒绝访问
+	if !sliceutils.StringContains(params, role.StringGetter()) {
+		return ctx, status.Error(codes.PermissionDenied, "Access denied")
+	}
+	return ctx, nil
+}
+```
+
+### main函数
+
+```go
+func main() {
+	conf := config.LoadFromEnv()
+
+	svc := service.NewAnnotation(conf)
+
+  // 模拟数据库用户角色表的基于内存的数据结构
+	userStore := vo.UserStore{
+		vo.Auth{
+			User: "guest",
+			Pass: "guest",
+		}: vo.GUEST,
+		vo.Auth{
+			User: "user",
+			Pass: "user",
+		}: vo.USER,
+		vo.Auth{
+			User: "admin",
+			Pass: "admin",
+		}: vo.ADMIN,
+	}
+
+  // 创建自定义的grpcx_auth.Authorizer接口实现
+	authorizer := pb.NewAuthInterceptor(userStore)
+
+	grpcServer := grpcx.NewGrpcServer(
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_ctxtags.StreamServerInterceptor(),
+			grpc_opentracing.StreamServerInterceptor(),
+			grpc_prometheus.StreamServerInterceptor,
+			logging.StreamServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+			// 将authorizer传入grpcx_auth拦截器中
+			grpcx_auth.StreamServerInterceptor(authorizer),
+			grpc_recovery.StreamServerInterceptor(),
+		)),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_opentracing.UnaryServerInterceptor(),
+			grpc_prometheus.UnaryServerInterceptor,
+			logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(zlogger.Logger)),
+			// 将authorizer传入grpcx_auth拦截器中
+			grpcx_auth.UnaryServerInterceptor(authorizer),
+			grpc_recovery.UnaryServerInterceptor(),
+		)),
+	)
+	pb.RegisterAnnotationServiceServer(grpcServer, svc)
+	grpcServer.Run()
+}
+```
+
 ## 限流
 ### 用法
 
