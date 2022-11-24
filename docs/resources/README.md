@@ -7,7 +7,9 @@ sidebar: auto
 ## 教程
 
 - [go-doudou series 01: How to develop a monolithic RESTful service with go-doudou](https://dev.to/wubin1989/go-doudou-series-01-how-to-develop-a-monolithic-restful-service-with-go-doudou-8gl)
+- [go-doudou series 02: How to develop gRPC service with go-doudou](https://dev.to/wubin1989/go-doudou-series-02-how-to-develop-grpc-service-with-go-doudou-308h)
 - [快速上手go-doudou开发单体RESTful服务](https://juejin.cn/post/7046936284438200333)
+- [快速上手go-doudou开发gRPC服务](https://www.jianshu.com/p/43d386287ffa)
 - [如何在go-doudou应用中使用枚举类型](https://juejin.cn/post/7116744830738726942)
 - [如何在go-doudou应用中使用注解](https://juejin.cn/post/7116826614830202910)
 
