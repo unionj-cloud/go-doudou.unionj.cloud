@@ -41,6 +41,15 @@ dotenv格式和yaml格式的本地配置文件的使用方式是完全一样的�
     4. 加载`app.yml`文件  
 
 **注意**：前缀必须是`app`
+::: tip
+环境变量转yaml配置时，规则是下划线做为属性分隔，字符很长的属性名可以用中横线分隔成多个单词，提高可读性，例如环境变量GDD_DB_MYSQL_DISABLEDATETIMEPRECISION转成yaml配置：
+```yaml
+gdd:
+	db:
+		mysql:
+			disable-datetime-precision:
+```
+:::
 
 ## 远程配置方案
 
@@ -156,6 +165,7 @@ if !c.SkippedFirstEvent {
 | GDD_LOG_LEVEL              | 日志等级，可选项：`panic`, `fatal`, `error`, `warn`, `warning`, `info`, `debug`, `trace`           | info       |        |
 | GDD_LOG_FORMAT             | 日志格式，可选项：`text`, `json`                                                                   | text       |        |
 | GDD_LOG_REQ_ENABLE         | 是否开启http请求体和响应体日志                                                                       | false      |        |
+| GDD_LOG_CALLER         | 是否打印“文件名:行号”                                                                       | false      |        |
 | GDD_LOG_DISCARD            | 关闭日志                                                                                          | false      |        |
 | GDD_GRACE_TIMEOUT          | 优雅下线的超时时间                                                                                  | 15s        |        |
 | GDD_WRITE_TIMEOUT          | http连接的写超时时间                                                                                | 15s        |        |
@@ -163,6 +173,8 @@ if !c.SkippedFirstEvent {
 | GDD_IDLE_TIMEOUT           | http连接的空闲超时时间                                                                              | 60s        |        |
 | GDD_ROUTE_ROOT_PATH        | http请求路径前缀                                                                                   |            |        |
 | GDD_SERVICE_NAME           | 服务名                                                                                            |            | 必须    |
+| GDD_SERVICE_GROUP          | 服务组名，当采用zookeeper做服务注册与发现时有效                                                         |            | 必须    |
+| GDD_SERVICE_VERSION        | 服务版本名，当采用zookeeper做服务注册与发现时有效                                                       |            | 必须    |
 | GDD_HOST                   | http服务器监听地址                                                                                  |            |        |
 | GDD_PORT                   | http服务器监听端口                                                                                  | 6060       |        |
 | GDD_GRPC_PORT              | gRPC服务器监听端口                                                                                  | 50051       |        |
@@ -172,10 +184,12 @@ if !c.SkippedFirstEvent {
 | <span style="color: red; font-weight: bold;">*</span>GDD_MANAGE_PASS            | 内建http接口的http basic校验密码                                                                      | admin      |        |
 | GDD_TRACING_METRICS_ROOT   | jaeger调用链监控的`metrics root`                                                                     | `go-doudou`  |        |
 | GDD_WEIGHT                 | 服务实例的权重                                                                                       | 1          |        |
-| GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`etcd`, `nacos`                                                           |  |        |
+| GDD_SERVICE_DISCOVERY_MODE | 服务发现模式，可选项：`etcd`, `nacos`, `zk`                                                           |  |        |
 | GDD_ENABLE_RESPONSE_GZIP | 开启http响应体gzip压缩     | true |              |
 | GDD_SQL_LOG_ENABLE | 开启sql日志打印      | false |              |
-| GDD_REGISTER_HOST           | 服务实例的注册地址，默认值取主机的私有IP |                  |          |
+| GDD_REGISTER_HOST           | 服务实例的注册地址，默认值取主机的私有IP                                              |     |          |
+| GDD_FALLBACK_CONTENTTYPE           | 默认的http响应体的Content-Type头                                                     | application/json; charset=UTF-8 |          |
+| GDD_CONFIG_REMOTE_TYPE           | 远程配置中心，可选值：`nacos`, `apollo`                                                     |  |          |
 
 ## Nacos配置
 
@@ -183,7 +197,7 @@ if !c.SkippedFirstEvent {
 | -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
 | GDD_NACOS_NAMESPACE_ID            | 命名空间                                                                                 | public                 |          |
 | GDD_NACOS_TIMEOUT_MS              | 请求超时时间，单位毫秒                                                                      | 10000            |          |
-| GDD_NACOS_NOT_LOAD_CACHE_AT_START | 程序启动时是否从磁盘缓存中加载服务列表                                                         | false            |          |
+| GDD_NACOS_NOTLOADCACHEATSTART | 程序启动时是否从磁盘缓存中加载服务列表                                                         | false            |          |
 | GDD_NACOS_LOG_DIR                 | 日志目录地址                                                                               | /tmp/nacos/log   |          |
 | GDD_NACOS_CACHE_DIR               | 服务列表磁盘缓存地址                                                      | /tmp/nacos/cache |          |
 | GDD_NACOS_LOG_LEVEL               | 日志等级，可选项：`debug`,`info`,`warn`,`error`                                      | info             |          |
@@ -211,3 +225,38 @@ if !c.SkippedFirstEvent {
 | -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
 | GDD_ETCD_ENDPOINTS            | etcd集群连接地址                                                                                 |                  |          |
 | GDD_ETCD_LEASE              | etcd服务注册租约TTL时间，单位秒                                                                      | 5            |          |
+
+## Zookeeper配置
+
+| 环境变量名       | 描述                                        | 默认值    | 是否必须                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
+| GDD_ZK_SERVERS               | zookeeper集群连接地址，多个地址用英文逗号分隔                                                    |                  |          |
+| GDD_ZK_SEQUENCE              | zookeeper节点是否加编号                                                                      | false            |          |
+| GDD_ZK_DIRECTORY_PATTERN     | 服务注册节点路径的字符串fmt模式，%s表示服务名                                                     | /registry/%s/providers     |          |
+
+## Gorm配置
+
+| 环境变量名       | 描述                                        | 默认值    | 是否必须                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------- |
+| GDD_DB_DISABLEAUTOCONFIGURE           | 关闭自动配置                                                   |   false               |          |
+| GDD_DB_DRIVER              | 数据库driver名称，与gorm保持一致：`mysql`, `postgres`, `sqlite`, `sqlserver`, `tidb`, `clickhouse`  |             |          |
+| GDD_DB_DSN     | 数据库连接地址                                                     |     |          |
+| GDD_DB_POOL_MAXIDLECONNS     | 最大空闲连接数                                                    | 2    |          |
+| GDD_DB_POOL_MAXOPENCONNS     | 最大连接数，-1表示无限制                                                     |  -1    |          |
+| GDD_DB_POOL_CONNMAXLIFETIME     | 一个连接最长可复用的时间期限，-1表示无限制                                                 |  -1    |          |
+| GDD_DB_POOL_CONNMAXIDLETIME     | 一个连接最长空闲时间，如果超期则会在下次复用前被关闭，-1表示无限制                               | -1     |          |
+| GDD_DB_LOG_SLOWTHRESHOLD     | 慢查询日志的阈值                                                     | 200ms     |          |
+| GDD_DB_LOG_IGNORERECORDNOTFOUNDERROR     | 忽略没找到记录的错误                                                     | false     |          |
+| GDD_DB_LOG_PARAMETERIZEDQUERIES          | 是否隐藏sql参数                                                                      | false     |          |
+| GDD_DB_LOG_LEVEL     | 日志级别，与gorm一致：`silent`, `error`, `warn`, `info`                                                   | warn     |          |
+| GDD_DB_MYSQL_SKIPINITIALIZEWITHVERSION     | gorm的SkipInitializeWithVersion参数                                           | false     |          |
+| GDD_DB_MYSQL_DEFAULTSTRINGSIZE     | gorm的DefaultStringSize参数                                               | 0     |          |
+| GDD_DB_MYSQL_DISABLEWITHRETURNING     | gorm的DisableWithReturning参数                                                | false     |          |
+| GDD_DB_MYSQL_DISABLEDATETIMEPRECISION     | gorm的DisableDatetimePrecision参数                                            | false     |          |
+| GDD_DB_MYSQL_DONTSUPPORTRENAMEINDEX     | gorm的DontSupportRenameIndex参数                                              | false     |          |
+| GDD_DB_MYSQL_DONTSUPPORTRENAMECOLUMN     | gorm的DontSupportRenameColumn参数                                             | false     |          |
+| GDD_DB_MYSQL_DONTSUPPORTFORSHARECLAUSE     | gorm的DontSupportForShareClause参数                                           | false     |          |
+| GDD_DB_MYSQL_DONTSUPPORTNULLASDEFAULTVALUE     | gorm的DontSupportNullAsDefaultValue参数                                       | false     |          |
+| GDD_DB_MYSQL_DONTSUPPORTRENAMECOLUMNUNIQUE     | gorm的DontSupportRenameColumnUnique参数                                      | false     |          |
+| GDD_DB_POSTGRES_PREFERSIMPLEPROTOCOL     | gorm的PreferSimpleProtocol参数                                             | false     |          |
+| GDD_DB_POSTGRES_WITHOUTRETURNING     | gorm的WithoutReturning参数                                                | false     |          |
