@@ -40,6 +40,23 @@ GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos # Required
 GDD_SERVICE_DISCOVERY_MODE=nacos # Required
 ```
 
+### Zookeeper
+
+`go-doudou`内建支持使用Zookeeper作为注册中心，实现服务注册与发现。需配置如下环境变量:
+
+- `GDD_SERVICE_NAME`: 服务名称，必须
+- `GDD_SERVICE_DISCOVERY_MODE`: 服务发现机制名称，必须
+- `GDD_ZK_SERVERS`: Nacos服务端地址，必须
+
+```shell
+GDD_SERVICE_NAME=cloud.unionj.ServiceB # Required
+GDD_SERVICE_DISCOVERY_MODE=zk # Required
+GDD_ZK_SERVERS=localhost:2181 # Required
+GDD_ZK_DIRECTORY_PATTERN=/dubbo/%s/providers
+GDD_SERVICE_GROUP=group
+GDD_SERVICE_VERSION=v2.2.2
+```
+
 ## 客户端负载均衡
 
 ### 简单轮询负载均衡 (Etcd用)
@@ -144,6 +161,84 @@ func main() {
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
+}
+```
+
+### 简单轮询负载均衡 (zookeeper用)
+
+调用 `zk.NewRRGrpcClientConn` 方法，创建gRPC连接。 
+
+```go
+func main() {
+	...
+  tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	opts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffLinear(100 * time.Millisecond)),
+		grpc_retry.WithCodes(codes.NotFound, codes.Aborted),
+	}
+
+	dialOptions := []grpc.DialOption{
+		tlsOption,
+		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+			grpc_opentracing.StreamClientInterceptor(),
+			grpc_retry.StreamClientInterceptor(opts...),
+		)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+			grpc_opentracing.UnaryClientInterceptor(),
+			grpc_retry.UnaryClientInterceptor(opts...),
+		)),
+	}
+
+	// Set up a connection to the server.
+	grpcConn := zk.NewRRGrpcClientConn(zk.ServiceConfig{
+		Name:    "cloud.unionj.ServiceB_grpc",
+		Group:   "",
+		Version: "",
+	}, dialOptions...)
+	defer grpcConn.Close()
+
+	svc := service.NewServiceA(conf, bClient, pb.NewServiceBServiceClient(grpcConn))
+	...
+}
+```
+
+### 加权轮询负载均衡 (zookeeper用)
+
+调用 `zk.NewSWRRGrpcClientConn` 方法，创建gRPC连接。 
+
+```go
+func main() {
+	...
+  tlsOption := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	opts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffLinear(100 * time.Millisecond)),
+		grpc_retry.WithCodes(codes.NotFound, codes.Aborted),
+	}
+
+	dialOptions := []grpc.DialOption{
+		tlsOption,
+		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+			grpc_opentracing.StreamClientInterceptor(),
+			grpc_retry.StreamClientInterceptor(opts...),
+		)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+			grpc_opentracing.UnaryClientInterceptor(),
+			grpc_retry.UnaryClientInterceptor(opts...),
+		)),
+	}
+
+	// Set up a connection to the server.
+	grpcConn := zk.NewSWRRGrpcClientConn(zk.ServiceConfig{
+		Name:    "cloud.unionj.ServiceB_grpc",
+		Group:   "",
+		Version: "",
+	}, dialOptions...)
+	defer grpcConn.Close()
+
+	svc := service.NewServiceA(conf, bClient, pb.NewServiceBServiceClient(grpcConn))
+	...
 }
 ```
 

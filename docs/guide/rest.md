@@ -85,13 +85,30 @@ GDD_ETCD_ENDPOINTS=localhost:2379
 `go-doudou`内建支持使用阿里开发的Nacos作为注册中心，实现服务注册与发现。需配置如下环境变量:
 
 - `GDD_SERVICE_NAME`: 服务名称，必须
-- `GDD_NACOS_SERVER_ADDR`: Nacos服务端地址
-- `GDD_SERVICE_DISCOVERY_MODE`: 服务发现机制名称
+- `GDD_NACOS_SERVER_ADDR`: Nacos服务端地址，必须
+- `GDD_SERVICE_DISCOVERY_MODE`: 服务发现机制名称，必须
 
 ```shell
 GDD_SERVICE_NAME=test-svc # Required
 GDD_NACOS_SERVER_ADDR=http://localhost:8848/nacos # Required
 GDD_SERVICE_DISCOVERY_MODE=nacos # Required
+```
+
+### Zookeeper
+
+`go-doudou`内建支持使用Zookeeper作为注册中心，实现服务注册与发现。需配置如下环境变量:
+
+- `GDD_SERVICE_NAME`: 服务名称，必须
+- `GDD_SERVICE_DISCOVERY_MODE`: 服务发现机制名称，必须
+- `GDD_ZK_SERVERS`: Nacos服务端地址，必须
+
+```shell
+GDD_SERVICE_NAME=cloud.unionj.ServiceB # Required
+GDD_SERVICE_DISCOVERY_MODE=zk # Required
+GDD_ZK_SERVERS=localhost:2181 # Required
+GDD_ZK_DIRECTORY_PATTERN=/dubbo/%s/providers
+GDD_SERVICE_GROUP=group
+GDD_SERVICE_VERSION=v2.2.2
 ```
 
 ## 客户端负载均衡
@@ -163,6 +180,42 @@ func main() {
 	srv := rest.NewRestServer()
 	srv.AddRoute(httpsrv.Routes(handler)...)
 	srv.Run()
+}
+```
+
+### 简单轮询负载均衡 (zookeeper用)
+
+需调用 `zk.NewRRServiceProvider("注册在zookeeper中的服务名称")` 创建 `zk.RRServiceProvider` 实例。
+
+```go
+func main() {
+	...
+	provider := zk.NewRRServiceProvider(zk.ServiceConfig{
+		Name:    "cloud.unionj.ServiceB_rest",
+		Group:   "",
+		Version: "",
+	})
+	defer provider.Close()
+	bClient := client.NewServiceBClient(restclient.WithProvider(provider))
+	...
+}
+```
+
+### 加权轮询负载均衡 (zookeeper用)
+
+需调用 `zk.NewSWRRServiceProvider("注册在zookeeper中的服务名称")` 创建 `zk.NewSWRRServiceProvider` 实例。
+
+```go
+func main() {
+	...
+	provider := zk.NewSWRRServiceProvider(zk.ServiceConfig{
+		Name:    "cloud.unionj.ServiceB_rest",
+		Group:   "",
+		Version: "",
+	})
+	defer provider.Close()
+	bClient := client.NewServiceBClient(restclient.WithProvider(provider))
+	...
 }
 ```
 
