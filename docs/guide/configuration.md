@@ -173,8 +173,8 @@ if !c.SkippedFirstEvent {
 | GDD_IDLE_TIMEOUT           | http连接的空闲超时时间                                                                              | 60s        |        |
 | GDD_ROUTE_ROOT_PATH        | http请求路径前缀                                                                                   |            |        |
 | GDD_SERVICE_NAME           | 服务名                                                                                            |            | 必须    |
-| GDD_SERVICE_GROUP          | 服务组名，当采用zookeeper做服务注册与发现时有效                                                         |            | 必须    |
-| GDD_SERVICE_VERSION        | 服务版本名，当采用zookeeper做服务注册与发现时有效                                                       |            | 必须    |
+| GDD_SERVICE_GROUP          | 服务组名，当采用zookeeper做服务注册与发现时有效                                                         |            |     |
+| GDD_SERVICE_VERSION        | 服务版本名，当采用zookeeper做服务注册与发现时有效                                                       |            |     |
 | GDD_HOST                   | http服务器监听地址                                                                                  |            |        |
 | GDD_PORT                   | http服务器监听端口                                                                                  | 6060       |        |
 | GDD_GRPC_PORT              | gRPC服务器监听端口                                                                                  | 50051       |        |
