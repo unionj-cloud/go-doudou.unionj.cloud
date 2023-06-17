@@ -1,10 +1,15 @@
+---
+sidebar: auto
+---
+
+# 实战go-doudou与dubbo-go通过gRPC互通互调
 
 ![image.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3158223bb49441e695370bee3ae570a2~tplv-k3u1fbpfcp-watermark.image?)
 Photo by [NEOM](https://unsplash.com/@neom?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/yUcH008GS6A?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
 
 我们在基于go语言的微服务实践和交流中，了解到一部分过去以Java技术专为主的公司或者技术团队已经在用dubbo-go框架开发微服务与遗留的Java服务共同构成异构的系统，而部分技术团队又有采用go-doudou微服务框架进行敏捷开发，快速实现服务上线和服务交付的诉求。可是问题来了，go-doudou能否跟已有的dubbo生态的服务互通互调，加入已有的微服务架构体系中呢？go-doudou从v2.0.8版本起实现了基于zookeeper的服务注册与发现机制，跟采用dubbo框架写的服务可以通过gRPC协议互通互调。本文通过一个简单的案例来演示如何上手go-doudou微服务框架，同时实现与dubbo-go写的服务互通互调。示例代码仓库地址：https://github.com/unionj-cloud/go-doudou-tutorials/tree/master/dubbodemo
 
-# 工程结构说明
+## 工程结构说明
 
 ```shell
 .
@@ -31,7 +36,7 @@ Photo by [NEOM](https://unsplash.com/@neom?utm_source=unsplash&utm_medium=referr
 一个客户端程序是：
 1. go-client：采用dubbo-go框架的客户端程序，用于演示dubbo-go调用go-doudou的gRPC服务；
 
-# 启动zookeeper
+## 启动zookeeper
 我们首先需要通过docker-compose启动三节点的zookeeper集群，执行命令`docker-compose -f docker-compose.yml up -d --remove-orphans`。
 ```yaml
 # docker-compose.yml
@@ -72,7 +77,7 @@ services:
 
 ![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c370c3df18c439a873ec5be02a1bcf8~tplv-k3u1fbpfcp-zoom-1.image)
 
-# 启动service-b
+## 启动service-b
 切到service-b的路径下执行命令`go run cmd/main.go`，看到下图红框中的三行日志输出即表示服务已启动。
 ![image.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d97b13b2848f422896c63e1222a07b9a~tplv-k3u1fbpfcp-watermark.image?)
 此时我们再看prettyZoo，可以看到cloud.unionj.ServiceB_grpc服务已经注册上去了。
@@ -118,7 +123,7 @@ func (receiver *ServiceBImpl) GetDeptByIdRpc(ctx context.Context, request *pb.Ge
 ```
 实现逻辑非常简单，返回的部门名称都是"测试部门"，部门id取入参传进来的值。
 
-# 启动go-server
+## 启动go-server
 切到`dubbo/rpc/grpc/go-server`路径下，执行命令`go run cmd/server.go`。
 
 ![image.png](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a0a61f846978418bba1ac5a4e78f7bc0~tplv-k3u1fbpfcp-watermark.image?)
@@ -140,7 +145,7 @@ func (g *GreeterProvider) SayHello(ctx context.Context, req *pb.HelloRequest) (r
 ```
 非常简单，只是一个SayHello的RPC接口。
 
-# 启动service-a
+## 启动service-a
 切到service-a并执行命令`go run cmd/main.go`。
 
 ![image.png](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bec098bca54e4667a5d428217075ccad~tplv-k3u1fbpfcp-watermark.image?)
@@ -256,7 +261,7 @@ func (receiver *ServiceAImpl) GetRpcSayHello(ctx context.Context, name string) (
 
 ![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/02cf0574bbf943d9b726911023c680c2~tplv-k3u1fbpfcp-watermark.image?)
 
-# 启动dubbo-go客户端
+## 启动dubbo-go客户端
 切到`dubbo/rpc/grpc/go-client`路径并执行命令`go run cmd/go-doudou/godoudou_client.go`。
 
 ![image.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1facbd571fbd47098f3fe34c1c12d2f0~tplv-k3u1fbpfcp-watermark.image?)
@@ -297,7 +302,7 @@ func main() {
 ```
 代码逻辑非常简单，但是有一点需要注意：**go-doudou生成的gRPC的pb文件不能直接给dubbo-go的客户端作为依赖使用，必须用go-doudou生成的Protobuf文件结合dubbo-go的gRPC插件生成dubbo-go定制的pb文件**。所以笔者将ServiceB的proto文件复制出来放进了dubbo/rpc/grpc/service-b路径下，单独用protoc命令`protoc -I . serviceb.proto --dubbo3grpc_out=plugins=grpc+dubbo3grpc:.`生成出了serviceb.pb.go文件。关于dubbo-go的gRPC插件安装和用法请参考dubbo-go的相关文档。
 
-# 总结
+## 总结
 本文通过一个简单的演示项目讲解了go-doudou新特性基于zookeeper的服务注册与发现的用法，同时也演示了go-doudou和dubbo-go基于zookeeper通过gRPC协议互相调用的特性。go-doudou框架是一套傻瓜式的go语言微服务框架，无须额外学习任何IDL语言，只要会定义go接口即可一把生成全套REST服务和gRPC服务代码，同时在框架层面提供了全套的服务治理能力，可以说上手简单，但功能强大。欢迎各位同学学习和使用go-doudou框架来开发你的下一个项目！
 
 
